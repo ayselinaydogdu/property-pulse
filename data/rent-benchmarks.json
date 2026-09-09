@@ -1,0 +1,177 @@
+{
+  "_meta": {
+    "description": "İlçe bazlı m² kira çapaları. Her satır yayınlanmış bir istatistikten elle aktarılmıştır; uydurma değer YOKTUR.",
+    "howToUpdate": "Kaynak sayfayı aç, değerleri güncelle, retrievedAt'i bugüne çek, sonra `npm run db:seed` çalıştır.",
+    "currency": "TRY",
+    "unit": "TL / m² / ay"
+  },
+  "sources": [
+    {
+      "key": "kirametre-2026",
+      "name": "KiraMetre",
+      "url": "https://www.kirametre.com/kira/istanbul",
+      "method": "PUBLISHED_AGGREGATE",
+      "retrievedAt": "2026-09-09",
+      "periodNote": "Kaynak dönemi '2026' olarak veriyor, ay belirtmiyor. Kiracı beyanlarından hesaplanan toplulaştırılmış ortalama.",
+      "sampleNote": "Sayfa toplamda 28.084 kiracı kaydına dayandığını belirtiyor; ilçe başına kaç kayıt düştüğü açıklanmamış, bu yüzden ilçe bazında örneklem sayısı boş bırakıldı.",
+      "benchmarks": [
+        {
+          "neighborhoodSlug": "kadikoy",
+          "rentPerM2": 559
+        },
+        {
+          "neighborhoodSlug": "bakirkoy",
+          "rentPerM2": 545
+        },
+        {
+          "neighborhoodSlug": "besiktas",
+          "rentPerM2": 504
+        },
+        {
+          "neighborhoodSlug": "sisli",
+          "rentPerM2": 467
+        },
+        {
+          "neighborhoodSlug": "sariyer",
+          "rentPerM2": 465
+        },
+        {
+          "neighborhoodSlug": "zeytinburnu",
+          "rentPerM2": 455
+        },
+        {
+          "neighborhoodSlug": "sile",
+          "rentPerM2": 435
+        },
+        {
+          "neighborhoodSlug": "eyupsultan",
+          "rentPerM2": 429
+        },
+        {
+          "neighborhoodSlug": "uskudar",
+          "rentPerM2": 409
+        },
+        {
+          "neighborhoodSlug": "beyoglu",
+          "rentPerM2": 394
+        },
+        {
+          "neighborhoodSlug": "bahcelievler",
+          "rentPerM2": 393
+        },
+        {
+          "neighborhoodSlug": "kucukcekmece",
+          "rentPerM2": 390
+        },
+        {
+          "neighborhoodSlug": "maltepe",
+          "rentPerM2": 386
+        },
+        {
+          "neighborhoodSlug": "gungoren",
+          "rentPerM2": 386
+        },
+        {
+          "neighborhoodSlug": "atasehir",
+          "rentPerM2": 385
+        },
+        {
+          "neighborhoodSlug": "kartal",
+          "rentPerM2": 384
+        },
+        {
+          "neighborhoodSlug": "fatih",
+          "rentPerM2": 364
+        },
+        {
+          "neighborhoodSlug": "kagithane",
+          "rentPerM2": 358
+        },
+        {
+          "neighborhoodSlug": "umraniye",
+          "rentPerM2": 353
+        },
+        {
+          "neighborhoodSlug": "basaksehir",
+          "rentPerM2": 346
+        },
+        {
+          "neighborhoodSlug": "adalar",
+          "rentPerM2": 338
+        },
+        {
+          "neighborhoodSlug": "tuzla",
+          "rentPerM2": 333
+        },
+        {
+          "neighborhoodSlug": "bayrampasa",
+          "rentPerM2": 333
+        },
+        {
+          "neighborhoodSlug": "beykoz",
+          "rentPerM2": 324
+        },
+        {
+          "neighborhoodSlug": "bagcilar",
+          "rentPerM2": 324
+        },
+        {
+          "neighborhoodSlug": "avcilar",
+          "rentPerM2": 322
+        },
+        {
+          "neighborhoodSlug": "cekmekoy",
+          "rentPerM2": 320
+        },
+        {
+          "neighborhoodSlug": "buyukcekmece",
+          "rentPerM2": 318
+        },
+        {
+          "neighborhoodSlug": "pendik",
+          "rentPerM2": 315
+        },
+        {
+          "neighborhoodSlug": "esenler",
+          "rentPerM2": 295
+        },
+        {
+          "neighborhoodSlug": "sancaktepe",
+          "rentPerM2": 294
+        },
+        {
+          "neighborhoodSlug": "beylikduzu",
+          "rentPerM2": 276
+        },
+        {
+          "neighborhoodSlug": "sultanbeyli",
+          "rentPerM2": 269
+        },
+        {
+          "neighborhoodSlug": "gaziosmanpasa",
+          "rentPerM2": 267
+        },
+        {
+          "neighborhoodSlug": "arnavutkoy",
+          "rentPerM2": 250
+        },
+        {
+          "neighborhoodSlug": "sultangazi",
+          "rentPerM2": 240
+        },
+        {
+          "neighborhoodSlug": "silivri",
+          "rentPerM2": 232
+        },
+        {
+          "neighborhoodSlug": "esenyurt",
+          "rentPerM2": 231
+        },
+        {
+          "neighborhoodSlug": "catalca",
+          "rentPerM2": 200
+        }
+      ]
+    }
+  ]
+}

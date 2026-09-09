@@ -1,0 +1,129 @@
+# PropertyPulse
+
+Semt bazlı emlak fiyatlarını **ve** günlük yaşam maliyetini bir araya getiren, kullanıcının gelirine göre "nerede yaşamalıyım" sorusuna veriye dayalı cevap veren bir bölge karşılaştırma dashboard'u.
+
+## Amaç
+
+Türkiye'de ev/semt seçimi genellikle sadece kira fiyatına bakılarak yapılıyor. Ama gerçek yaşam maliyeti kira dışında; günlük harcamalar (kahve, market, ulaşım vb.) semtten semte ciddi şekilde değişiyor. Bu proje:
+
+- Emlak fiyatlarını (kira, m² birim fiyatı, kira getirisi) semt bazlı karşılaştırır
+- Buna ek olarak günlük yaşam maliyeti verisiyle bir "yaşam maliyeti endeksi" oluşturur
+- Kullanıcı gelirini girdiğinde, bütçesine en uygun semtleri harita üzerinde gösterir
+
+Amaç, sadece "ilginç bir veri görselleştirmesi" değil; taşınma/yerleşim kararını destekleyen **pratik bir karar aracı** olmak.
+
+## Hızlı başlangıç
+
+```bash
+npm install
+cp .env.example .env          # DATABASE_URL'i kendi Postgres'ine göre düzenle
+npm run db:push               # şemayı veritabanına uygula
+npm run db:seed               # data/ altındaki veriyi yükle
+npm run dev                   # http://localhost:3000
+```
+
+Örnek ilan verisini yeniden üretmek için: `npx tsx scripts/generate-listings.ts`
+
+## Veri durumu
+
+**Bu projede uydurma veri yoktur.** Kaynağı olmayan bir sayı veritabanına giremez (şemada `source`, `sourceUrl`, `observedAt` zorunlu alanlar) ve arayüzde gösterilmez - "veri yok" yazar.
+
+| Veri | Durum | Kaynak |
+|---|---|---|
+| İlçe bazlı m² kira | **Bağlı** - İstanbul'un 39 ilçesi | [KiraMetre](https://www.kirametre.com/kira/istanbul), yayınlanmış ortalama, 09.09.2026 |
+| İlçe koordinatları | Bağlı | [OpenStreetMap / Overpass API](https://overpass-api.de/api/interpreter), `admin_level=6` ilçe sınırlarının merkezi |
+| Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
+| Ulaşım süresi ve maliyeti | **Yok** | [İBB GTFS verisi](https://data.ibb.gov.tr/dataset/public-transport-gtfs-data) mevcut, bağlanmadı |
+| Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
+
+### Araştırma notları (neyin neden olmadığı)
+
+- **TCMB EVDS Konut Fiyat Endeksi** İBBS Düzey 1/2 kırılımında; **ilçe kırılımı yok**. Mutlak değer için kullanılamaz, ama elle girilen çapaları güncel tutmak için endeks olarak kullanılabilir (planlanıyor).
+- **İlçe bazlı kira için açık veri API'si yok.** İlan sitelerinden veri çekmek kullanım şartlarına aykırı. Bu yüzden yayınlanmış toplulaştırılmış istatistikler kaynak gösterilerek elle aktarılıyor - ayda 5 sayı.
+- **İBB Açık Veri**'de ilçe bazlı tek konut verisi "İlçelere Göre Konut Satış Adedi" ve son güncellemesi 2024; fiyat içermiyor.
+- **Market fiyatları semte göre anlamlı değişmiyor** (zincir marketler ülke geneli fiyatlıyor). Bu yüzden şehir geneli bir fiyatı ilçelere dağıtıp farklıymış gibi göstermek yerine şema `GeoScope.CITY` ile bunu işaretliyor.
+
+### Veriyi güncelleme
+
+`data/rent-benchmarks.json` içindeki kaynak sayfayı aç, değerleri ve `retrievedAt`'i güncelle, `npm run db:seed` çalıştır. Upsert olduğu için tekrar çalıştırmak güvenli.
+
+Yeni bir ilçe/şehir eklemek için `data/neighborhoods.json`'a koordinat, `data/rent-benchmarks.json`'a kira değeri girilir. Koordinatlar Overpass API'den alınabilir:
+
+```
+[out:json];
+area["name"="İstanbul"]["admin_level"="4"]->.il;
+relation(area.il)["admin_level"="6"]["boundary"="administrative"];
+out center tags;
+```
+
+## Mimarideki ana kararlar
+
+- **Kaynaksız sayı giremez.** Her fiyat kaydında `source`, `sourceUrl`, `observedAt`, `method` zorunlu. Uydurma veriyi disiplinle değil, şema kısıtıyla engelliyoruz.
+- **Bilinmeyen `null` döner, sıfır sayılmaz.** Verisi olmayan kalem toplama dahil edilmez; arayüz "veri yok" gösterir ve eksik kalem varsa oranın yanına `+` koyar. Eksik veri varken hiçbir semt için "bütçene uygun" hükmü verilmez (`affordable: null`).
+- **Olmayan kırılım uydurulmaz.** `GeoScope` alanı, şehir geneli bir fiyatın ilçelere dağıtılıp farklıymış gibi gösterilmesini engeller.
+- **Türetilmiş sayı etiketlenir.** `PriceMethod.DERIVED`, endeksle güncellenmiş gibi hesaplanmış değerleri gözlemlenmiş değerlerden ayırır.
+- **Kaynaklar çelişirse aralık gösterilir.** Aynı ilçe için birden fazla kaynak varsa tek sayı seçilmez; `hasSpread` ile min-max gösterilir. Sahte kesinlik de bir yanıltma biçimi.
+- **Ham veri saklanır, gösterge hesaplanır.** `PropertyListing` tek tek kayıtlar için hazır ve şu an boş; kullanıcılar kendi kiralarını girdikçe ilçe ortalaması yayınlanmış çapa yerine kendi gözlemlerimizden hesaplanacak (medyan + IQR filtresi bunun için duruyor, eşik: 20 kayıt).
+- **Fiyatlar tam sayı.** Kuruş integer olarak tutulur; float yuvarlama hatası birikmez.
+- **Renkler doğrulanmış paletten.** Palet renk körlüğü ayrımı ve kontrast kontrollerinden hem açık hem koyu temada geçiyor. Tema renkleri `src/app/globals.css` içinde tek yerde tanımlı.
+
+## API
+
+| Endpoint | Ne döner |
+|---|---|
+| `GET /api/neighborhoods` | Tüm semtler: medyan kira, m² fiyatı, brüt getiri, sepet tutarı, maliyet endeksi |
+| `GET /api/neighborhoods/[slug]` | Tek semtin detayı + sepet kırılımı |
+| `GET /api/cost-index` | Sadece yaşam maliyeti endeksi (harita katmanı için) |
+| `GET /api/affordability?income=75000&areaM2=90&household=1&maxBurdenPct=60` | Gelire göre uygun semtler, kalan paraya göre sıralı |
+
+Örnek:
+
+```bash
+curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2"
+```
+
+## Yol Haritası
+
+### Tamamlanan
+- [x] İstanbul'un **39 ilçesinin tamamı** - kira verisi ve OSM koordinatlarıyla
+- [x] PostgreSQL + Prisma şeması, provenance alanları zorunlu
+- [x] **Uydurma verinin tamamı silindi** (500 sentetik ilan + 60 uydurma fiyat)
+- [x] Gerçek ilçe m² kira verisi, kaynağı ve tarihiyle
+- [x] Aggregasyon API'si + gelire göre karşılaştırma
+- [x] Leaflet harita, Recharts grafikler, açık/koyu tema
+- [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
+- [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
+
+### Sıradaki
+- [ ] **Ulaşım katmanı** - İBB GTFS ile "işe gidiş süresi + yol parası". Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
+- [ ] TCMB EVDS bağlantısı - elle girilen kira çapalarını endeksle güncel tutmak (`method: DERIVED`)
+- [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
+- [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
+- [ ] Aggregasyon fonksiyonları için birim testleri
+- [ ] `db push` yerine versiyonlu `prisma migrate`
+- [ ] İlçe sınırı GeoJSON choropleth (şema `Neighborhood.polygon` ile hazır)
+- [ ] Vercel'e deploy
+
+## Teknoloji Yığını
+
+- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS 4, Recharts 3
+- **Harita:** Leaflet + OpenStreetMap karoları
+- **Backend:** Next.js API routes
+- **Veritabanı:** PostgreSQL + Prisma 6
+- **Deploy:** Vercel (planlanıyor)
+
+## Proje yapısı
+
+```
+data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
+prisma/schema.prisma      Şema - provenance alanları zorunlu
+prisma/seed.ts            data/ -> veritabanı yükleyici
+src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi
+src/lib/aggregate.ts      Semt göstergeleri + bütçe uygunluğu hesabı
+src/app/api/              REST endpoint'leri
+src/components/           Dashboard, harita, grafikler
+```
+
+## Kapsam notu
+
+Proje başlangıçta "semt bazlı tam yaşam maliyeti haritası" olarak tasarlanmıştı. Araştırma sonucunda ilçe kırılımında günlük harcama verisinin (kahve, market, hizmet) hiçbir açık kaynakta bulunmadığı görüldü. Uydurma veriyle geniş kapsam göstermek yerine kapsam daraltıldı: sadece gerçek veriyle desteklenebilen kısım yapılıyor. Eksik olanlar arayüzde ve bu dosyada açıkça listeleniyor.

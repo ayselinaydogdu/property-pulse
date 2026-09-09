@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/*
+ * Renk rolleri tek yerde: light/dark geçişi burada olur, bileşenler
+ * ham hex yerine rol adlarını kullanır.
+ * Kaynak: doğrulanmış varsayılan veri görselleştirme paleti
+ * (kategorik slot 1 = mavi/kira, slot 2 = turuncu/yaşam maliyeti).
+ */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+
+  --series-rent: #2a78d6;
+  --series-cost: #eb6834;
+
+  --status-good: #0ca30c;
+  --status-critical: #d03b3b;
+
+  /* Sequential mavi rampa - harita yoğunluk katmanı */
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-550: #1c5cab;
+  --seq-700: #0d366b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface-1: #1a1a19;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+
+    --series-rent: #3987e5;
+    --series-cost: #d95926;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+
+  --series-rent: #3987e5;
+  --series-cost: #d95926;
+}
+
+body {
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Sayı sütunları hizalansın diye tablolarda ve eksenlerde tabular figürler */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaflet karo katmanı dark modda göz almasın */
+:root[data-theme="dark"] .leaflet-tile-pane,
+:root:not([data-theme="light"]) .leaflet-tile-pane {
+  filter: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .leaflet-tile-pane {
+    filter: brightness(0.75) saturate(0.7);
+  }
+}
+:root[data-theme="dark"] .leaflet-tile-pane {
+  filter: brightness(0.75) saturate(0.7);
+}
+
+.leaflet-container {
+  background: var(--surface-1);
+  font-family: inherit;
+}
+
+/*
+ * Recharts SVG'yi sunum nitelikleriyle boyuyor; CSS değişkenleri sunum
+ * niteliklerinde çözülmediği için tema renkleri buradan, CSS üzerinden veriliyor.
+ */
+.recharts-cartesian-grid line {
+  stroke: var(--grid);
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--axis);
+}
+.recharts-cartesian-axis-tick-value {
+  fill: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.recharts-reference-line line {
+  stroke: var(--text-muted);
+}
+.recharts-reference-line-label,
+.recharts-label-list text {
+  fill: var(--text-secondary);
+}
+/* Lejant yazısı metin token'ı giyer; kimliği yanındaki renkli işaret taşır */
+.recharts-legend-item-text {
+  color: var(--text-secondary) !important;
+}
+
+.pp-bar-rent .recharts-rectangle {
+  fill: var(--series-rent);
+}
+.pp-bar-cost .recharts-rectangle {
+  fill: var(--series-cost);
+}
+/* Yığın parçaları arasında 2px yüzey boşluğu */
+.pp-bar-stacked .recharts-rectangle {
+  stroke: var(--surface-1);
+  stroke-width: 2;
+}

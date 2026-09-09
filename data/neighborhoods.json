@@ -1,0 +1,322 @@
+{
+  "_meta": {
+    "description": "İstanbul'un 39 ilçesi. lat/lng, ilçe sınırının OpenStreetMap'teki idari ilişkisinden hesaplanan merkez noktasıdır.",
+    "source": "OpenStreetMap - Overpass API, admin_level=6 ilçe sınırları",
+    "sourceUrl": "https://overpass-api.de/api/interpreter",
+    "retrievedAt": "2026-09-09"
+  },
+  "neighborhoods": [
+    {
+      "slug": "adalar",
+      "name": "Adalar",
+      "district": "Adalar",
+      "city": "İstanbul",
+      "lat": 40.866262,
+      "lng": 29.058695
+    },
+    {
+      "slug": "arnavutkoy",
+      "name": "Arnavutköy",
+      "district": "Arnavutköy",
+      "city": "İstanbul",
+      "lat": 41.248359,
+      "lng": 28.655351
+    },
+    {
+      "slug": "atasehir",
+      "name": "Ataşehir",
+      "district": "Ataşehir",
+      "city": "İstanbul",
+      "lat": 40.984277,
+      "lng": 29.137899
+    },
+    {
+      "slug": "avcilar",
+      "name": "Avcılar",
+      "district": "Avcılar",
+      "city": "İstanbul",
+      "lat": 41.03751,
+      "lng": 28.719514
+    },
+    {
+      "slug": "bahcelievler",
+      "name": "Bahçelievler",
+      "district": "Bahçelievler",
+      "city": "İstanbul",
+      "lat": 41.009809,
+      "lng": 28.845859
+    },
+    {
+      "slug": "bakirkoy",
+      "name": "Bakırköy",
+      "district": "Bakırköy",
+      "city": "İstanbul",
+      "lat": 40.980608,
+      "lng": 28.834697
+    },
+    {
+      "slug": "bayrampasa",
+      "name": "Bayrampaşa",
+      "district": "Bayrampaşa",
+      "city": "İstanbul",
+      "lat": 41.050766,
+      "lng": 28.901229
+    },
+    {
+      "slug": "bagcilar",
+      "name": "Bağcılar",
+      "district": "Bağcılar",
+      "city": "İstanbul",
+      "lat": 41.044987,
+      "lng": 28.840347
+    },
+    {
+      "slug": "basaksehir",
+      "name": "Başakşehir",
+      "district": "Başakşehir",
+      "city": "İstanbul",
+      "lat": 41.103646,
+      "lng": 28.7451
+    },
+    {
+      "slug": "beykoz",
+      "name": "Beykoz",
+      "district": "Beykoz",
+      "city": "İstanbul",
+      "lat": 41.138811,
+      "lng": 29.214825
+    },
+    {
+      "slug": "beylikduzu",
+      "name": "Beylikdüzü",
+      "district": "Beylikdüzü",
+      "city": "İstanbul",
+      "lat": 40.987872,
+      "lng": 28.647489
+    },
+    {
+      "slug": "beyoglu",
+      "name": "Beyoğlu",
+      "district": "Beyoğlu",
+      "city": "İstanbul",
+      "lat": 41.042757,
+      "lng": 28.967398
+    },
+    {
+      "slug": "besiktas",
+      "name": "Beşiktaş",
+      "district": "Beşiktaş",
+      "city": "İstanbul",
+      "lat": 41.071721,
+      "lng": 29.023515
+    },
+    {
+      "slug": "buyukcekmece",
+      "name": "Büyükçekmece",
+      "district": "Büyükçekmece",
+      "city": "İstanbul",
+      "lat": 41.057063,
+      "lng": 28.512505
+    },
+    {
+      "slug": "esenler",
+      "name": "Esenler",
+      "district": "Esenler",
+      "city": "İstanbul",
+      "lat": 41.062403,
+      "lng": 28.867214
+    },
+    {
+      "slug": "esenyurt",
+      "name": "Esenyurt",
+      "district": "Esenyurt",
+      "city": "İstanbul",
+      "lat": 41.048906,
+      "lng": 28.661215
+    },
+    {
+      "slug": "eyupsultan",
+      "name": "Eyüpsultan",
+      "district": "Eyüpsultan",
+      "city": "İstanbul",
+      "lat": 41.165248,
+      "lng": 28.873194
+    },
+    {
+      "slug": "fatih",
+      "name": "Fatih",
+      "district": "Fatih",
+      "city": "İstanbul",
+      "lat": 41.014246,
+      "lng": 28.953995
+    },
+    {
+      "slug": "gaziosmanpasa",
+      "name": "Gaziosmanpaşa",
+      "district": "Gaziosmanpaşa",
+      "city": "İstanbul",
+      "lat": 41.072934,
+      "lng": 28.90679
+    },
+    {
+      "slug": "gungoren",
+      "name": "Güngören",
+      "district": "Güngören",
+      "city": "İstanbul",
+      "lat": 41.02009,
+      "lng": 28.880793
+    },
+    {
+      "slug": "kadikoy",
+      "name": "Kadıköy",
+      "district": "Kadıköy",
+      "city": "İstanbul",
+      "lat": 40.981133,
+      "lng": 29.063039
+    },
+    {
+      "slug": "kartal",
+      "name": "Kartal",
+      "district": "Kartal",
+      "city": "İstanbul",
+      "lat": 40.915554,
+      "lng": 29.196721
+    },
+    {
+      "slug": "kagithane",
+      "name": "Kağıthane",
+      "district": "Kağıthane",
+      "city": "İstanbul",
+      "lat": 41.079818,
+      "lng": 28.977895
+    },
+    {
+      "slug": "kucukcekmece",
+      "name": "Küçükçekmece",
+      "district": "Küçükçekmece",
+      "city": "İstanbul",
+      "lat": 41.020577,
+      "lng": 28.779567
+    },
+    {
+      "slug": "maltepe",
+      "name": "Maltepe",
+      "district": "Maltepe",
+      "city": "İstanbul",
+      "lat": 40.943958,
+      "lng": 29.155557
+    },
+    {
+      "slug": "pendik",
+      "name": "Pendik",
+      "district": "Pendik",
+      "city": "İstanbul",
+      "lat": 40.957196,
+      "lng": 29.361072
+    },
+    {
+      "slug": "sancaktepe",
+      "name": "Sancaktepe",
+      "district": "Sancaktepe",
+      "city": "İstanbul",
+      "lat": 40.999386,
+      "lng": 29.275024
+    },
+    {
+      "slug": "sariyer",
+      "name": "Sarıyer",
+      "district": "Sarıyer",
+      "city": "İstanbul",
+      "lat": 41.171637,
+      "lng": 29.024413
+    },
+    {
+      "slug": "silivri",
+      "name": "Silivri",
+      "district": "Silivri",
+      "city": "İstanbul",
+      "lat": 41.197922,
+      "lng": 28.18315
+    },
+    {
+      "slug": "sultanbeyli",
+      "name": "Sultanbeyli",
+      "district": "Sultanbeyli",
+      "city": "İstanbul",
+      "lat": 40.968308,
+      "lng": 29.278333
+    },
+    {
+      "slug": "sultangazi",
+      "name": "Sultangazi",
+      "district": "Sultangazi",
+      "city": "İstanbul",
+      "lat": 41.120705,
+      "lng": 28.872761
+    },
+    {
+      "slug": "tuzla",
+      "name": "Tuzla",
+      "district": "Tuzla",
+      "city": "İstanbul",
+      "lat": 40.891668,
+      "lng": 29.355698
+    },
+    {
+      "slug": "zeytinburnu",
+      "name": "Zeytinburnu",
+      "district": "Zeytinburnu",
+      "city": "İstanbul",
+      "lat": 41.005198,
+      "lng": 28.909605
+    },
+    {
+      "slug": "catalca",
+      "name": "Çatalca",
+      "district": "Çatalca",
+      "city": "İstanbul",
+      "lat": 41.319545,
+      "lng": 28.333075
+    },
+    {
+      "slug": "cekmekoy",
+      "name": "Çekmeköy",
+      "district": "Çekmeköy",
+      "city": "İstanbul",
+      "lat": 41.072784,
+      "lng": 29.270136
+    },
+    {
+      "slug": "umraniye",
+      "name": "Ümraniye",
+      "district": "Ümraniye",
+      "city": "İstanbul",
+      "lat": 41.02721,
+      "lng": 29.137509
+    },
+    {
+      "slug": "uskudar",
+      "name": "Üsküdar",
+      "district": "Üsküdar",
+      "city": "İstanbul",
+      "lat": 41.035208,
+      "lng": 29.049026
+    },
+    {
+      "slug": "sile",
+      "name": "Şile",
+      "district": "Şile",
+      "city": "İstanbul",
+      "lat": 41.089187,
+      "lng": 29.639934
+    },
+    {
+      "slug": "sisli",
+      "name": "Şişli",
+      "district": "Şişli",
+      "city": "İstanbul",
+      "lat": 41.06647,
+      "lng": 28.988872
+    }
+  ]
+}

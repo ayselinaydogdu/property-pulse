@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingType {
+  RENT
+  SALE
+}
+
+/// Bir sayının nereden geldiği. Uydurma veri için karşılık YOKTUR - kaynaksız
+/// sayı veritabanına giremesin diye her fiyat kaydında zorunludur.
+enum PriceMethod {
+  /// Doğrudan gözlem: resmî tarife, ölçülmüş fiyat, kullanıcı beyanı
+  OBSERVED
+  /// Yayınlanmış toplulaştırılmış istatistik (ilçe ortalaması vb.)
+  PUBLISHED_AGGREGATE
+  /// Başka veriden hesaplanmış (ör. endeksle güncellenmiş çapa)
+  DERIVED
+}
+
+/// Verinin hangi coğrafi kırılımda ölçüldüğü.
+/// Şehir geneli bir fiyatı ilçelere dağıtıp farklıymış gibi göstermemek için var.
+enum GeoScope {
+  CITY
+  DISTRICT
+}
+
+model Neighborhood {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  name      String
+  district  String
+  city      String   @default("İstanbul")
+  lat       Float
+  lng       Float
+  /// GeoJSON Polygon koordinatları: [[lng, lat], ...]
+  polygon   Json?
+  createdAt DateTime @default(now())
+
+  listings     PropertyListing[]
+  priceEntries PriceEntry[]
+  benchmarks   RentBenchmark[]
+
+  @@index([city, district])
+}
+
+/// Yayınlanmış ilçe bazlı m² kira ortalaması.
+///
+/// İlçe kırılımında kira için açık veri API'si yok; bu satırlar yayınlanmış
+/// istatistiklerden kaynağı ve tarihiyle birlikte elle aktarılır. Aynı ilçe için
+/// birden fazla kaynak olabilir - kaynaklar çeliştiğinde tek sayı seçmek yerine
+/// aralık gösterilir.
+model RentBenchmark {
+  id             Int         @id @default(autoincrement())
+  neighborhoodId Int
+  /// TL / m² / ay
+  rentPerM2      Int
+  /// Kaynak ilçe bazında örneklem sayısı vermiyorsa boş kalır
+  sampleSize     Int?
+  method         PriceMethod
+  source         String
+  sourceUrl      String
+  /// Verinin kaynaktan alındığı tarih
+  retrievedAt    DateTime
+  /// Kaynağın dönem/örneklem konusunda söyledikleri - arayüzde gösterilir
+  note           String?
+
+  neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
+
+  @@unique([neighborhoodId, source, retrievedAt])
+  @@index([neighborhoodId])
+}
+
+/// Tek tek gözlemlenen ilan/kira kaydı.
+///
+/// Şu an BOŞ: ilan sitelerinden veri çekmek kullanım şartlarına aykırı.
+/// Buranın dolacağı yer kullanıcı katkısı - kiracılar kendi kiralarını girdikçe
+/// ilçe ortalaması RentBenchmark yerine kendi gözlemlerimizden hesaplanacak
+/// (medyan + IQR aykırı değer filtresi bunun için hazır).
+model PropertyListing {
+  id             Int         @id @default(autoincrement())
+  neighborhoodId Int
+  type           ListingType
+  /// Kira için aylık TL, satılık için toplam TL
+  price          Int
+  areaM2         Int
+  rooms          String?
+  observedAt     DateTime
+  method         PriceMethod
+  source         String
+  sourceUrl      String?
+  externalId     String?
+
+  neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
+
+  @@unique([source, externalId])
+  @@index([neighborhoodId, type])
+}
+
+/// Yaşam maliyeti sepetindeki bir kalem.
+/// scope = CITY olan kalemler her ilçede aynı gösterilir; şehir geneli bir fiyatı
+/// ilçelere göre farklıymış gibi sunmak yanıltıcı olur.
+model CostOfLivingItem {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  name       String
+  category   String
+  unit       String
+  monthlyQty Float
+  scope      GeoScope
+
+  entries PriceEntry[]
+}
+
+/// Bir kalemin gözlemlenen fiyatı. Kaynak alanları zorunlu.
+model PriceEntry {
+  id             Int         @id @default(autoincrement())
+  itemId         Int
+  /// scope = CITY olan kalemlerde boş: fiyat şehrin tamamı için geçerli
+  neighborhoodId Int?
+  /// Kuruş cinsinden (float yuvarlama hatası birikmesin)
+  priceKurus     Int
+  method         PriceMethod
+  source         String
+  sourceUrl      String
+  observedAt     DateTime
+
+  item         CostOfLivingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  neighborhood Neighborhood?    @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
+
+  @@index([neighborhoodId, itemId])
+}
