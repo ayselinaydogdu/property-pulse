@@ -178,9 +178,17 @@ export default function Dashboard({
 
       try {
         const res = await fetch(`/api/affordability?${params}`, { signal: controller.signal });
-        const body = await res.json();
+        // Sunucu hata sayfası (HTML) dönebilir - JSON.parse'ın ham hatasını
+        // kullanıcıya göstermek yerine ne yapması gerektiğini söylüyoruz
+        const text = await res.text();
+        let body: { error?: string; neighborhoods?: AffordabilityRow[] };
+        try {
+          body = JSON.parse(text);
+        } catch {
+          throw new Error("Sunucuya ulaşılamadı. Sayfayı yenileyip tekrar dene.");
+        }
         if (!res.ok) throw new Error(body.error ?? "Hesaplama başarısız");
-        setRows(body.neighborhoods);
+        setRows(body.neighborhoods ?? []);
         setError(null);
       } catch (err) {
         if ((err as Error).name !== "AbortError") setError((err as Error).message);
@@ -381,7 +389,7 @@ export default function Dashboard({
                             style={{ color: "var(--status-critical)" }}
                           >
                             yok
-                            <span className="ml-1 font-normal">
+                            <span className="ml-1">
                               en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
                             </span>
                           </span>
