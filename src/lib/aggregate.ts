@@ -68,6 +68,17 @@ function lineCode(line: string, mode: string): string {
   return mode;
 }
 
+export type DistrictStation = {
+  name: string;
+  /** Kısa hat kodu: M4, T1, Marmaray, Metrobüs */
+  line: string;
+  /** Kaynaktaki tam hat adı */
+  lineName: string;
+  mode: string;
+  /** İlçe merkezinden kuş uçuşu km */
+  km: number;
+};
+
 export type TransitAccess = {
   /** Bugün hizmet veren istasyon sayısı */
   existingStations: number;
@@ -85,6 +96,8 @@ export type TransitAccess = {
   modes: string[];
   /** İlçeye hizmet eden hatların kısa kodları: M4, T1, Marmaray, Metrobüs... */
   lines: string[];
+  /** İlçedeki mevcut istasyonlar, merkeze yakından uzağa */
+  stations: DistrictStation[];
   provenance: Provenance;
 };
 
@@ -269,6 +282,15 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
         nearestStationLine: nearest?.line ?? null,
         modes: [...new Set(own.map((st) => st.mode))].sort(),
         lines: [...new Set(own.map((st) => lineCode(st.line, st.mode)))].sort(),
+        stations: own
+          .map((st) => ({
+            name: st.name,
+            line: lineCode(st.line, st.mode),
+            lineName: st.line,
+            mode: st.mode,
+            km: round(haversineKm({ lat: n.lat, lng: n.lng }, st), 1),
+          }))
+          .sort((a, b) => a.km - b.km),
         provenance: toProvenance({
           source: first.source,
           sourceUrl: first.sourceUrl,

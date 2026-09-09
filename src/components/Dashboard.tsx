@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import type { AffordabilityRow, Provenance } from "@/lib/aggregate";
+import type { AffordabilityRow, DistrictStation, Provenance } from "@/lib/aggregate";
 import { RentChart } from "@/components/Charts";
 import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -64,6 +64,22 @@ function SourceNote({ sources }: { sources: Provenance[] }) {
       ))}
     </span>
   );
+}
+
+/** Rozet zaten kodu gösteriyor: "M7 Yıldız - Mahmutbey..." -> "Yıldız - Mahmutbey..." */
+function stripLineCode(lineName: string, code: string): string {
+  return lineName.startsWith(`${code} `) ? lineName.slice(code.length + 1) : lineName;
+}
+
+/** İstasyonları hat koduna göre gruplar; gruplar merkeze yakınlığa göre sıralanır. */
+function groupByLine(stations: DistrictStation[]): [string, DistrictStation[]][] {
+  const groups = new Map<string, DistrictStation[]>();
+  for (const st of stations) {
+    const list = groups.get(st.line);
+    if (list) list.push(st);
+    else groups.set(st.line, [st]);
+  }
+  return [...groups.entries()].sort((a, b) => a[1][0].km - b[1][0].km);
 }
 
 function Card({
@@ -342,7 +358,7 @@ export default function Dashboard({
       <Card
         className="mb-6"
         title="Semt karşılaştırma tablosu"
-          subtitle={`${rows.length} ilçe, ucuzdan pahalıya`}
+          subtitle={`${rows.length} ilçe, ucuzdan pahalıya. Detay için bir satıra tıkla.`}
         >
           <div className="max-h-[560px] overflow-auto">
             <table className="w-full text-sm">
@@ -350,7 +366,7 @@ export default function Dashboard({
                 <tr style={{ color: "var(--text-muted)" }}>
                   <th className="py-1.5 text-left font-medium">Semt</th>
                   <th className="py-1.5 text-right font-medium">Kira</th>
-                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım (hat · en yakın istasyon)</th>
+                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım</th>
                   <th className="py-1.5 text-right font-medium">Yaşam maliyeti</th>
                   <th className="py-1.5 text-right font-medium">Gelirin payı</th>
                 </tr>
@@ -374,32 +390,26 @@ export default function Dashboard({
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
                     </td>
-                    <td className="py-1.5 text-right">
+                    <td className="tabular py-1.5 text-right">
                       {row.transit ? (
-                        <>
-                          {row.transit.existingStations > 0 ? (
-                            <div className="tabular">
-                              {row.transit.existingStations} istasyon
-                              <span className="ml-1.5">{row.transit.lines.join(" · ")}</span>
-                            </div>
-                          ) : (
-                            <div
-                              className="font-semibold"
-                              style={{ color: "var(--status-critical)" }}
-                            >
-                              hızlı ulaşım yok
-                            </div>
-                          )}
-                          {row.transit.nearestStationName && (
-                            <div className="tabular" style={{ color: "var(--text-muted)" }}>
-                              en yakın: {row.transit.nearestStationName}
-                              {row.transit.nearestStationLine
-                                ? ` (${row.transit.nearestStationLine})`
-                                : ""}{" "}
-                              · {formatKm(row.transit.nearestStationKm ?? 0)}
-                            </div>
-                          )}
-                        </>
+                        row.transit.existingStations > 0 ? (
+                          <>
+                            {row.transit.existingStations} istasyon
+                            <span className="ml-1.5" style={{ color: "var(--text-muted)" }}>
+                              {formatKm(row.transit.nearestStationKm ?? 0)}
+                            </span>
+                          </>
+                        ) : (
+                          <span
+                            className="font-semibold"
+                            style={{ color: "var(--status-critical)" }}
+                          >
+                            yok
+                            <span className="ml-1.5">
+                              en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
+                            </span>
+                          </span>
+                        )
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
@@ -439,6 +449,98 @@ export default function Dashboard({
             yüksek. Bu yüzden hiçbir semt için &quot;bütçene uygun&quot; hükmü verilmiyor.
           </p>
         </Card>
+
+      {selected && (
+        <Card className="mb-6" title={selected.name}>
+          {selected.rent && (
+            <>
+              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <div>
+                  <dt style={{ color: "var(--text-muted)" }}>m² birim kira</dt>
+                  <dd className="tabular mt-0.5 font-medium">
+                    {selected.rent.hasSpread
+                      ? `${selected.rent.perM2Min} - ${selected.rent.perM2Max} ₺`
+                      : `${selected.rent.perM2} ₺`}
+                  </dd>
+                </div>
+                <div>
+                  <dt style={{ color: "var(--text-muted)" }}>{selected.areaM2} m² için</dt>
+                  <dd className="tabular mt-0.5 font-medium">
+                    {formatTRY(selected.estimatedRent!)}
+                  </dd>
+                </div>
+                <div>
+                  <dt style={{ color: "var(--text-muted)" }}>Dayanak</dt>
+                  <dd className="mt-0.5 font-medium">
+                    {selected.rent.basis === "OWN_OBSERVATIONS"
+                      ? `${selected.rent.observationCount} kendi kaydımız`
+                      : "yayınlanmış ortalama"}
+                  </dd>
+                </div>
+                <div>
+                  <dt style={{ color: "var(--text-muted)" }}>Eksik veri</dt>
+                  <dd className="mt-0.5 font-medium">
+                    {selected.missing.length > 0 ? selected.missing.join(", ") : "yok"}
+                  </dd>
+                </div>
+              </dl>
+              <p className="mt-2">
+                <SourceNote sources={selected.rent.sources} />
+              </p>
+            </>
+          )}
+
+          {selected.transit && (
+            <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+              <h3 className="font-semibold">
+                Hızlı ulaşım
+                {selected.transit.existingStations > 0 && (
+                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
+                    {selected.transit.existingStations} istasyon ·{" "}
+                    {selected.transit.lines.length} hat
+                  </span>
+                )}
+              </h3>
+
+              {selected.transit.stations.length > 0 ? (
+                <ul className="mt-3 space-y-3">
+                  {groupByLine(selected.transit.stations).map(([line, stations]) => (
+                    <li key={line} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span
+                        className="rounded px-1.5 py-0.5 font-semibold"
+                        style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
+                      >
+                        {line}
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        {stripLineCode(stations[0].lineName, line)}
+                      </span>
+                      <span className="tabular basis-full" style={{ color: "var(--text-secondary)" }}>
+                        {stations.map((st) => `${st.name} (${formatKm(st.km)})`).join(" · ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
+                  Bu ilçede hızlı ulaşım istasyonu yok. En yakını başka bir ilçede:{" "}
+                  <b>
+                    {selected.transit.nearestStationName} ({selected.transit.nearestStationLine})
+                  </b>{" "}
+                  · {formatKm(selected.transit.nearestStationKm ?? 0)}
+                </p>
+              )}
+
+              <p className="mt-3">
+                <SourceNote sources={[selected.transit.provenance]} />
+              </p>
+              <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                Uzaklıklar ilçe merkezinden kuş uçuşudur - yürüme mesafesi değildir.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
 
       <Card
         className="mb-6"
@@ -519,64 +621,6 @@ export default function Dashboard({
             ))}
           </ul>
         </Card>
-
-      {selected?.rent && (
-        <Card className="mb-6" title={`${selected.name} - kira verisi`}>
-          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 lg:grid-cols-5">
-            <div>
-              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
-                m² birim kira
-              </dt>
-              <dd className="tabular mt-0.5 font-medium">
-                {selected.rent.hasSpread
-                  ? `${selected.rent.perM2Min} - ${selected.rent.perM2Max} ₺`
-                  : `${selected.rent.perM2} ₺`}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
-                {selected.areaM2} m² için
-              </dt>
-              <dd className="tabular mt-0.5 font-medium">
-                {formatTRY(selected.estimatedRent!)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
-                Dayanak
-              </dt>
-              <dd className="mt-0.5 font-medium">
-                {selected.rent.basis === "OWN_OBSERVATIONS"
-                  ? `${selected.rent.observationCount} kendi kaydımız`
-                  : "yayınlanmış ortalama"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
-                Hızlı ulaşım
-              </dt>
-              <dd className="mt-0.5 font-medium">
-                {selected.transit
-                  ? selected.transit.existingStations > 0
-                    ? `${selected.transit.existingStations} istasyon · ${selected.transit.lines.join(", ")}`
-                    : `yok · en yakın ${selected.transit.nearestStationName} (${formatKm(selected.transit.nearestStationKm ?? 0)})`
-                  : "veri yok"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
-                Eksik veri
-              </dt>
-              <dd className="mt-0.5 font-medium">
-                {selected.missing.length > 0 ? selected.missing.join(", ") : "yok"}
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-3">
-            <SourceNote sources={selected.rent.sources} />
-          </p>
-        </Card>
-      )}
 
       <footer className="text-sm" style={{ color: "var(--text-muted)" }}>
         <p>
