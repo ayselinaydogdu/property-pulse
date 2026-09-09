@@ -54,6 +54,20 @@ export type CostEstimate = {
   lines: BasketLine[];
 };
 
+/**
+ * Uzun hat adından kısa kodu çıkarır:
+ * "M4 Kadıköy - SGH Metro Hattı" -> "M4"
+ * "Halkalı - Gebze Marmaray..."  -> "Marmaray"
+ * Kodu olmayan hatlarda tür adına düşülür - tahmin edilmez.
+ */
+function lineCode(line: string, mode: string): string {
+  const code = line.match(/^(M\d+[A-Z]?|T\d+|TF\d+|F\d+)\b/)?.[1];
+  if (code) return code;
+  if (/marmaray/i.test(line)) return "Marmaray";
+  if (mode === "Metrobüs") return "Metrobüs";
+  return mode;
+}
+
 export type TransitAccess = {
   /** Bugün hizmet veren istasyon sayısı */
   existingStations: number;
@@ -65,8 +79,12 @@ export type TransitAccess = {
    */
   nearestStationKm: number | null;
   nearestStationName: string | null;
+  /** En yakın istasyonun hattı (kısa kod) */
+  nearestStationLine: string | null;
   /** İlçedeki mevcut istasyonların türleri: Metro, Tramvay, Banliyö, Metrobüs... */
   modes: string[];
+  /** İlçeye hizmet eden hatların kısa kodları: M4, T1, Marmaray, Metrobüs... */
+  lines: string[];
   provenance: Provenance;
 };
 
@@ -231,10 +249,12 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
 
     if (allExisting.length > 0) {
       const own = n.stations.filter((st) => st.stage === "EXISTING");
-      const nearest = allExisting.reduce<{ km: number; name: string } | null>(
+      const nearest = allExisting.reduce<{ km: number; name: string; line: string } | null>(
         (best, st) => {
           const km = haversineKm({ lat: n.lat, lng: n.lng }, st);
-          return best === null || km < best.km ? { km, name: st.name } : best;
+          return best === null || km < best.km
+            ? { km, name: st.name, line: lineCode(st.line, st.mode) }
+            : best;
         },
         null,
       );
@@ -246,7 +266,9 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
           .length,
         nearestStationKm: nearest ? round(nearest.km, 1) : null,
         nearestStationName: nearest?.name ?? null,
+        nearestStationLine: nearest?.line ?? null,
         modes: [...new Set(own.map((st) => st.mode))].sort(),
+        lines: [...new Set(own.map((st) => lineCode(st.line, st.mode)))].sort(),
         provenance: toProvenance({
           source: first.source,
           sourceUrl: first.sourceUrl,

@@ -339,18 +339,18 @@ export default function Dashboard({
         </Card>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-        <Card
-          title="Semt karşılaştırma tablosu"
+      <Card
+        className="mb-6"
+        title="Semt karşılaştırma tablosu"
           subtitle={`${rows.length} ilçe, ucuzdan pahalıya`}
         >
-          <div className="max-h-[420px] overflow-auto">
+          <div className="max-h-[560px] overflow-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ color: "var(--text-muted)" }}>
                   <th className="py-1.5 text-left font-medium">Semt</th>
                   <th className="py-1.5 text-right font-medium">Kira</th>
-                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım</th>
+                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım (hat · en yakın istasyon)</th>
                   <th className="py-1.5 text-right font-medium">Yaşam maliyeti</th>
                   <th className="py-1.5 text-right font-medium">Gelirin payı</th>
                 </tr>
@@ -374,26 +374,32 @@ export default function Dashboard({
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
                     </td>
-                    <td className="tabular py-1.5 text-right">
+                    <td className="py-1.5 text-right">
                       {row.transit ? (
-                        row.transit.existingStations > 0 ? (
-                          <>
-                            {row.transit.existingStations} istasyon
-                            <span className="ml-1" style={{ color: "var(--text-muted)" }}>
-                              {formatKm(row.transit.nearestStationKm ?? 0)}
-                            </span>
-                          </>
-                        ) : (
-                          <span
-                            className="font-semibold"
-                            style={{ color: "var(--status-critical)" }}
-                          >
-                            yok
-                            <span className="ml-1">
-                              en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
-                            </span>
-                          </span>
-                        )
+                        <>
+                          {row.transit.existingStations > 0 ? (
+                            <div className="tabular">
+                              {row.transit.existingStations} istasyon
+                              <span className="ml-1.5">{row.transit.lines.join(" · ")}</span>
+                            </div>
+                          ) : (
+                            <div
+                              className="font-semibold"
+                              style={{ color: "var(--status-critical)" }}
+                            >
+                              hızlı ulaşım yok
+                            </div>
+                          )}
+                          {row.transit.nearestStationName && (
+                            <div className="tabular" style={{ color: "var(--text-muted)" }}>
+                              en yakın: {row.transit.nearestStationName}
+                              {row.transit.nearestStationLine
+                                ? ` (${row.transit.nearestStationLine})`
+                                : ""}{" "}
+                              · {formatKm(row.transit.nearestStationKm ?? 0)}
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
@@ -434,11 +440,12 @@ export default function Dashboard({
           </p>
         </Card>
 
-        <Card
-          title="Veri durumu"
+      <Card
+        className="mb-6"
+        title="Veri durumu"
           subtitle="Neyin gerçek veriyle geldiği, neyin eksik olduğu"
         >
-          <ul className="space-y-3 text-sm">
+          <ul className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
             <li className="flex items-start gap-2">
               <span aria-hidden style={{ color: "var(--status-good)" }}>
                 ●
@@ -512,11 +519,10 @@ export default function Dashboard({
             ))}
           </ul>
         </Card>
-      </div>
 
       {selected?.rent && (
         <Card className="mb-6" title={`${selected.name} - kira verisi`}>
-          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 lg:grid-cols-5">
             <div>
               <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
                 m² birim kira
@@ -543,6 +549,18 @@ export default function Dashboard({
                 {selected.rent.basis === "OWN_OBSERVATIONS"
                   ? `${selected.rent.observationCount} kendi kaydımız`
                   : "yayınlanmış ortalama"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
+                Hızlı ulaşım
+              </dt>
+              <dd className="mt-0.5 font-medium">
+                {selected.transit
+                  ? selected.transit.existingStations > 0
+                    ? `${selected.transit.existingStations} istasyon · ${selected.transit.lines.join(", ")}`
+                    : `yok · en yakın ${selected.transit.nearestStationName} (${formatKm(selected.transit.nearestStationKm ?? 0)})`
+                  : "veri yok"}
               </dd>
             </div>
             <div>
