@@ -19,3 +19,8 @@ export function formatShortTRY(value: number): string {
 export function formatPct(value: number, digits = 1): string {
   return `%${value.toFixed(digits).replace(".", ",")}`;
 }
+
+/** 32.5 -> "32,5 km" */
+export function formatKm(value: number): string {
+  return `${tlPrecise.format(value)} km`;
+}

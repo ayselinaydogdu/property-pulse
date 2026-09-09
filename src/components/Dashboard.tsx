@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { AffordabilityRow, Provenance } from "@/lib/aggregate";
 import { RentChart } from "@/components/Charts";
-import { METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
+import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
 import ThemeToggle from "@/components/ThemeToggle";
-import { formatPct, formatTRY } from "@/lib/format";
+import { formatKm, formatPct, formatTRY } from "@/lib/format";
 
 // Leaflet window nesnesine ihtiyaç duyuyor - sunucuda render edilmemeli
 const MapPanel = dynamic(() => import("@/components/MapPanel"), {
@@ -200,6 +200,8 @@ export default function Dashboard({
   const priciest = [...withRent].sort((a, b) => b.estimatedRent! - a.estimatedRent!)[0];
   const selected = rows.find((r) => r.slug === selectedSlug) ?? null;
   const hasCostData = rows.some((r) => r.cost !== null);
+  const totalStations = rows.reduce((sum, r) => sum + (r.transit?.existingStations ?? 0), 0);
+  const railless = rows.filter((r) => r.transit && r.transit.existingStations === 0);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
@@ -256,11 +258,16 @@ export default function Dashboard({
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card
           title="Harita"
-          subtitle={`${input.areaM2} m² için tahmini aylık kira. Koyu renk = pahalı.`}
+          subtitle={
+            metric === "rent"
+              ? `${input.areaM2} m² için tahmini aylık kira. ${METRIC_HINTS.rent}`
+              : METRIC_HINTS[metric]
+          }
         >
           <div className="mb-3 flex flex-wrap gap-1.5">
             {(Object.keys(METRIC_LABELS) as MapMetric[]).map((key) => {
-              const disabled = key !== "rent" && !hasCostData;
+              const disabled =
+                (key === "cost" || key === "total") && !hasCostData;
               return (
                 <button
                   key={key}
@@ -305,6 +312,22 @@ export default function Dashboard({
               <b>{formatTRY(priciest.estimatedRent! - cheapest.estimatedRent!)}</b> fark var.
             </p>
           )}
+          {/* Projenin asıl söylemek istediği şey: ucuzluğun bir bedeli var */}
+          {railless.length > 0 && (
+            <p
+              className="mt-2 rounded-lg p-2.5 text-sm"
+              style={{ background: "var(--page)", color: "var(--text-secondary)" }}
+            >
+              Ama ucuzluğun bedeli var:{" "}
+              <b>{railless.length} ilçede hiç raylı sistem istasyonu yok</b> (
+              {railless
+                .slice(0, 3)
+                .map((r) => r.name)
+                .join(", ")}
+              {railless.length > 3 ? "…" : ""}). En ucuz ilçe {cheapest?.name}, en yakın
+              istasyona <b>{formatKm(cheapest?.transit?.nearestStationKm ?? 0)}</b> uzakta.
+            </p>
+          )}
         </Card>
       </div>
 
@@ -319,6 +342,7 @@ export default function Dashboard({
                 <tr style={{ color: "var(--text-muted)" }}>
                   <th className="py-1.5 text-left font-medium">Semt</th>
                   <th className="py-1.5 text-right font-medium">Kira</th>
+                  <th className="py-1.5 text-right font-medium">Raylı sistem</th>
                   <th className="py-1.5 text-right font-medium">Yaşam maliyeti</th>
                   <th className="py-1.5 text-right font-medium">Gelirin payı</th>
                 </tr>
@@ -338,6 +362,30 @@ export default function Dashboard({
                     <td className="tabular py-1.5 text-right">
                       {row.estimatedRent !== null ? (
                         formatTRY(row.estimatedRent)
+                      ) : (
+                        <span style={{ color: "var(--text-muted)" }}>veri yok</span>
+                      )}
+                    </td>
+                    <td className="tabular py-1.5 text-right">
+                      {row.transit ? (
+                        row.transit.existingStations > 0 ? (
+                          <>
+                            {row.transit.existingStations} istasyon
+                            <span
+                              className="ml-1 text-xs"
+                              style={{ color: "var(--text-muted)" }}
+                            >
+                              {formatKm(row.transit.nearestStationKm ?? 0)}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ color: "var(--status-critical)" }}>
+                            yok
+                            <span className="ml-1 text-xs">
+                              en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
+                            </span>
+                          </span>
+                        )
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
@@ -405,14 +453,34 @@ export default function Dashboard({
                 )}
               </div>
             </li>
+            {rows[0]?.transit && (
+              <li className="flex items-start gap-2">
+                <span aria-hidden style={{ color: "var(--status-good)" }}>
+                  ●
+                </span>
+                <div>
+                  <div className="font-medium">
+                    Raylı sistem · İstanbul ilçelerinde {totalStations} mevcut istasyon
+                  </div>
+                  <SourceNote sources={[rows[0].transit.provenance]} />
+                  <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                    Metro, tramvay, banliyö (Marmaray), füniküler ve teleferik. İnşaat
+                    halindeki istasyonlar erişim sayısına katılmıyor. Kaynaktaki 268 mevcut
+                    istasyonun 6 tanesi bir ilçe sınırına düşmüyor: 5'i Kocaeli'nde
+                    (Marmaray il dışına çıkıyor), Haliç ise metro köprüsünün üstünde.
+                    Uzaklık, ilçe merkezinden kuş uçuşudur - yürüme mesafesi değildir.
+                  </p>
+                </div>
+              </li>
+            )}
             {[
               {
                 name: "Günlük harcamalar (kahve, market, hizmet)",
                 note: "İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak.",
               },
               {
-                name: "Ulaşım süresi ve maliyeti",
-                note: "İBB GTFS verisi mevcut, henüz bağlanmadı. Sıradaki iş.",
+                name: "İşe gidiş süresi",
+                note: "İstasyon konumları bağlandı; kapı-kapı süre hesabı için rota motoru gerekiyor. Sıradaki iş.",
               },
               {
                 name: "Satılık m² fiyatı ve kira getirisi",

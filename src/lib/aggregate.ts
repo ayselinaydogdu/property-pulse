@@ -4,8 +4,9 @@
  * Temel kural: bilinmeyen sayı üretilmez. Verisi olmayan her şey `null` döner ve
  * arayüzde "veri yok" olarak görünür - tahmin edilmez, sıfır sayılmaz.
  */
-import type { PriceMethod } from "@prisma/client";
+import type { SourceMethod } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { haversineKm } from "@/lib/geo";
 import { iqrFilter, median, round } from "@/lib/stats";
 
 /** Kendi gözlemlerimizden ortalama hesaplamak için gereken en az kayıt sayısı. */
@@ -14,7 +15,7 @@ const MIN_OWN_OBSERVATIONS = 20;
 export type Provenance = {
   source: string;
   sourceUrl: string | null;
-  method: PriceMethod;
+  method: SourceMethod;
   /** ISO tarih */
   observedAt: string;
   sampleSize: number | null;
@@ -53,6 +54,22 @@ export type CostEstimate = {
   lines: BasketLine[];
 };
 
+export type TransitAccess = {
+  /** Bugün hizmet veren istasyon sayısı */
+  existingStations: number;
+  /** İnşaat halindeki istasyonlar - bugün erişim sağlamaz, ayrı sayılır */
+  underConstruction: number;
+  /**
+   * İlçe merkezinden en yakın mevcut istasyona KUŞ UÇUŞU mesafe.
+   * Yürüme mesafesi değildir; evden istasyona gerçek mesafe bundan uzundur.
+   */
+  nearestStationKm: number | null;
+  nearestStationName: string | null;
+  /** İlçedeki mevcut istasyonların türleri: Metro, Tramvay, Banliyö... */
+  modes: string[];
+  provenance: Provenance;
+};
+
 export type NeighborhoodStats = {
   slug: string;
   name: string;
@@ -66,6 +83,8 @@ export type NeighborhoodStats = {
   rent: RentEstimate | null;
   /** Yaşam maliyeti verisi yoksa null - sıfır DEĞİL */
   cost: CostEstimate | null;
+  /** Raylı sistem erişimi; istasyon verisi yoksa null */
+  transit: TransitAccess | null;
   /** Hangi verilerin eksik olduğu, arayüzde dürüstçe gösterilmek üzere */
   missing: string[];
 };
@@ -73,7 +92,7 @@ export type NeighborhoodStats = {
 function toProvenance(row: {
   source: string;
   sourceUrl: string | null;
-  method: PriceMethod;
+  method: SourceMethod;
   observedAt: Date;
   sampleSize?: number | null;
   note?: string | null;
@@ -94,6 +113,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
     include: {
       listings: { where: { type: "RENT" } },
       benchmarks: { orderBy: { retrievedAt: "desc" } },
+      stations: true,
       priceEntries: { include: { item: true } },
     },
   });
@@ -103,6 +123,9 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
     where: { neighborhoodId: null },
     include: { item: true },
   });
+
+  // "En yakın istasyon" ilçe sınırını aşabilir, o yüzden hepsi lazım
+  const allExisting = await prisma.transitStation.findMany({ where: { stage: "EXISTING" } });
 
   return neighborhoods.map((n) => {
     const missing: string[] = [];
@@ -203,6 +226,39 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       missing.push("yaşam maliyeti");
     }
 
+    // --- Raylı sistem erişimi ---
+    let transit: TransitAccess | null = null;
+
+    if (allExisting.length > 0) {
+      const own = n.stations.filter((st) => st.stage === "EXISTING");
+      const nearest = allExisting.reduce<{ km: number; name: string } | null>(
+        (best, st) => {
+          const km = haversineKm({ lat: n.lat, lng: n.lng }, st);
+          return best === null || km < best.km ? { km, name: st.name } : best;
+        },
+        null,
+      );
+      const first = n.stations[0] ?? allExisting[0];
+
+      transit = {
+        existingStations: own.length,
+        underConstruction: n.stations.filter((st) => st.stage === "UNDER_CONSTRUCTION")
+          .length,
+        nearestStationKm: nearest ? round(nearest.km, 1) : null,
+        nearestStationName: nearest?.name ?? null,
+        modes: [...new Set(own.map((st) => st.mode))].sort(),
+        provenance: toProvenance({
+          source: first.source,
+          sourceUrl: first.sourceUrl,
+          method: first.method,
+          observedAt: first.observedAt,
+        }),
+      };
+      // İlçede istasyon olmaması EKSİK VERİ değil, bilinen bir sıfır - missing'e girmez
+    } else {
+      missing.push("raylı sistem");
+    }
+
     return {
       slug: n.slug,
       name: n.name,
@@ -212,6 +268,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       lng: n.lng,
       polygon: (n.polygon as number[][][] | null) ?? null,
       rent,
+      transit,
       cost,
       missing,
     };

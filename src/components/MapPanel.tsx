@@ -5,16 +5,22 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { AffordabilityRow } from "@/lib/aggregate";
 import { METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
-import { formatTRY } from "@/lib/format";
+import { formatKm, formatTRY } from "@/lib/format";
 
 /** Sequential mavi rampa (açık = düşük, koyu = yüksek). */
 const RAMP = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"];
 
-/** Verisi olmayan semt için null - haritada işaretçi çizilmez. */
+/** Verisi olmayan ilçe için null - haritada boyanmaz. */
 function metricValue(row: AffordabilityRow, metric: MapMetric): number | null {
   if (metric === "rent") return row.estimatedRent;
+  if (metric === "transit") return row.transit?.nearestStationKm ?? null;
   if (metric === "cost") return row.estimatedCost;
   return row.knownMonthly;
+}
+
+/** Ölçek etiketi metriğe göre değişir: kira ₺, uzaklık km. */
+function formatMetric(value: number, metric: MapMetric): string {
+  return metric === "transit" ? formatKm(value) : formatTRY(value);
 }
 
 /** Değeri min-max aralığında rampanın bir adımına eşler. */
@@ -35,6 +41,18 @@ function popupHtml(row: AffordabilityRow): string {
      <div>Yaşam maliyeti: <b>${
        row.estimatedCost !== null ? formatTRY(row.estimatedCost) : "veri yok"
      }</b></div>
+     ${
+       row.transit
+         ? `<div style="margin-top:4px">Raylı sistem: <b>${
+             row.transit.existingStations > 0
+               ? `${row.transit.existingStations} istasyon (${row.transit.modes.join(", ")})`
+               : "yok"
+           }</b></div>
+            <div>En yakın istasyon: <b>${formatKm(row.transit.nearestStationKm ?? 0)}</b> · ${
+              row.transit.nearestStationName
+            }</div>`
+         : ""
+     }
      ${
        source
          ? `<div style="margin-top:4px;color:#898781;font-size:11px">Kaynak: ${source.source}</div>`
@@ -122,10 +140,7 @@ export default function MapPanel({
           color: isSelected ? "#0b0b0b" : "#fcfcfb",
           weight: isSelected ? 2.5 : 1,
         });
-        shape.bindTooltip(
-          `${row.name} · ${row.estimatedRent !== null ? formatTRY(row.estimatedRent) : "veri yok"}`,
-          { sticky: true },
-        );
+        shape.bindTooltip(`${row.name} · ${formatMetric(value, metric)}`, { sticky: true });
         shape.bindPopup(popupHtml(row));
         shape.on("click", () => onSelectRef.current(row.slug));
         shape.on("mouseover", () => shape.setStyle({ fillOpacity: 0.9 }));
@@ -143,7 +158,10 @@ export default function MapPanel({
           color: "#fcfcfb",
           weight: 2,
         });
-        marker.bindTooltip(row.name, { direction: "top", offset: [0, -8] });
+        marker.bindTooltip(`${row.name} · ${formatMetric(value, metric)}`, {
+          direction: "top",
+          offset: [0, -8],
+        });
         marker.bindPopup(popupHtml(row));
         marker.on("click", () => onSelectRef.current(row.slug));
         marker.addTo(layer);
@@ -171,13 +189,13 @@ export default function MapPanel({
         className="mt-3 flex items-center gap-2 text-xs"
         style={{ color: "var(--text-muted)" }}
       >
-        <span>{formatTRY(range.min)}</span>
+        <span>{formatMetric(range.min, metric)}</span>
         <div className="flex h-2 flex-1 overflow-hidden rounded-full">
           {RAMP.map((color) => (
             <span key={color} className="flex-1" style={{ background: color }} />
           ))}
         </div>
-        <span>{formatTRY(range.max)}</span>
+        <span>{formatMetric(range.max, metric)}</span>
       </div>
     </div>
   );

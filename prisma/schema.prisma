@@ -14,7 +14,7 @@ enum ListingType {
 
 /// Bir sayının nereden geldiği. Uydurma veri için karşılık YOKTUR - kaynaksız
 /// sayı veritabanına giremesin diye her fiyat kaydında zorunludur.
-enum PriceMethod {
+enum SourceMethod {
   /// Doğrudan gözlem: resmî tarife, ölçülmüş fiyat, kullanıcı beyanı
   OBSERVED
   /// Yayınlanmış toplulaştırılmış istatistik (ilçe ortalaması vb.)
@@ -28,6 +28,13 @@ enum PriceMethod {
 enum GeoScope {
   CITY
   DISTRICT
+}
+
+enum StationStage {
+  /// Bugün hizmet veren istasyon
+  EXISTING
+  /// İnşaat halinde - bugün erişim sağlamaz, erişim hesabına katılmaz
+  UNDER_CONSTRUCTION
 }
 
 model Neighborhood {
@@ -45,6 +52,7 @@ model Neighborhood {
   listings     PropertyListing[]
   priceEntries PriceEntry[]
   benchmarks   RentBenchmark[]
+  stations     TransitStation[]
 
   @@index([city, district])
 }
@@ -62,7 +70,7 @@ model RentBenchmark {
   rentPerM2      Int
   /// Kaynak ilçe bazında örneklem sayısı vermiyorsa boş kalır
   sampleSize     Int?
-  method         PriceMethod
+  method         SourceMethod
   source         String
   sourceUrl      String
   /// Verinin kaynaktan alındığı tarih
@@ -91,7 +99,7 @@ model PropertyListing {
   areaM2         Int
   rooms          String?
   observedAt     DateTime
-  method         PriceMethod
+  method         SourceMethod
   source         String
   sourceUrl      String?
   externalId     String?
@@ -125,7 +133,7 @@ model PriceEntry {
   neighborhoodId Int?
   /// Kuruş cinsinden (float yuvarlama hatası birikmesin)
   priceKurus     Int
-  method         PriceMethod
+  method         SourceMethod
   source         String
   sourceUrl      String
   observedAt     DateTime
@@ -134,4 +142,28 @@ model PriceEntry {
   neighborhood Neighborhood?    @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
 
   @@index([neighborhoodId, itemId])
+}
+
+/// Raylı sistem istasyonu (metro, tramvay, banliyö/Marmaray, füniküler, teleferik).
+///
+/// neighborhoodId, istasyon noktasının hangi ilçe sınırı içine düştüğünden
+/// hesaplanır (nokta-poligon testi, seed sırasında). Sınırların dışına düşen
+/// istasyon varsa boş kalır.
+model TransitStation {
+  id             Int          @id @default(autoincrement())
+  name           String
+  line           String
+  mode           String
+  stage          StationStage
+  lat            Float
+  lng            Float
+  neighborhoodId Int?
+  method         SourceMethod
+  source         String
+  sourceUrl      String
+  observedAt     DateTime
+
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
+
+  @@index([neighborhoodId, stage])
 }

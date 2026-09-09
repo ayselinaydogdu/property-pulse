@@ -33,9 +33,18 @@ npm run dev                   # http://localhost:3000
 | İlçe bazlı m² kira | **Bağlı** - İstanbul'un 39 ilçesi | [KiraMetre](https://www.kirametre.com/kira/istanbul), yayınlanmış ortalama, 09.09.2026 |
 | İlçe koordinatları | Bağlı | [OpenStreetMap / Overpass API](https://overpass-api.de/api/interpreter), `admin_level=6` ilçe sınırlarının merkezi |
 | İlçe sınırları (harita çokgenleri) | Bağlı | Aynı Overpass sorgusu, `out geom`; Douglas-Peucker ile ~65 m toleransla sadeleştirildi (42.171 → 4.916 nokta, 96 KB) |
+| Raylı sistem istasyonları | **Bağlı** - 343 istasyon (268 mevcut, 75 inşaatta) | [İBB Açık Veri - Raylı Sistem İstasyon Noktaları](https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi), 05.06.2025 |
 | Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
-| Ulaşım süresi ve maliyeti | **Yok** | [İBB GTFS verisi](https://data.ibb.gov.tr/dataset/public-transport-gtfs-data) mevcut, bağlanmadı |
+| İşe gidiş süresi (kapı-kapı) | **Yok** | İstasyon konumları bağlandı, süre hesabı için rota motoru gerekiyor |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
+
+### Raylı sistem verisi hakkında
+
+- Metro/Marmaray içeren **[Public Transport GTFS](https://data.ibb.gov.tr/dataset/public-transport-gtfs-data) veri seti kullanılmadı**: sayfasında "bu veri güncellenmeyecektir" notu var, metro verisi 2023'te kalmış. Onun yerine güncel (Haziran 2025) **Raylı Sistem İstasyon Noktaları** GeoJSON'u kullanıldı - metro, tramvay, banliyö (Marmaray), füniküler ve teleferiği kapsıyor.
+- **İnşaat halindeki 75 istasyon ayrı tutuluyor** (`stage` alanı). Bugün erişim sağlamadıkları için erişim hesabına katılmıyorlar, ama veri korunuyor.
+- İstasyonun hangi ilçeye düştüğü **nokta-poligon testiyle** (ray casting) hesaplanıyor. Mevcut 268 istasyonun 6'sı hiçbir ilçeye düşmüyor ve bu doğru: 5'i Kocaeli'nde (Marmaray Gebze'ye kadar gidiyor), Haliç ise metro köprüsünün üstünde, karada değil.
+- **"En yakın istasyon" kuş uçuşu mesafedir** ve ilçe merkezinden ölçülür. Yürüme mesafesi değildir; gerçek erişim bundan zordur. Arayüzde bu not düşülüyor.
+- İETT (otobüs) GTFS verisi güncel (Nisan 2026) ve indirilebiliyor, ama koordinatları bozuk geliyor (`stop_lat = 410.191.700.005.564` - Türkçe sayı biçimlendirmesi ondalığı binlik ayracına çevirmiş). Geri kazanılabilir; otobüs katmanı eklenirse bu düzeltme gerekecek.
 
 ### Araştırma notları (neyin neden olmadığı)
 
@@ -95,9 +104,10 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
+- [x] **Raylı sistem erişimi** - ilçe başına istasyon sayısı, türleri ve en yakın istasyona uzaklık; haritada ayrı katman
 
 ### Sıradaki
-- [ ] **Ulaşım katmanı** - İBB GTFS ile "işe gidiş süresi + yol parası". Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
+- [ ] **Kapı-kapı yolculuk süresi** - kullanıcı iş konumunu girsin, her ilçeden süre hesaplansın. İstasyon konumları hazır; rota motoru (OpenTripPlanner vb.) gerekiyor. Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
 - [ ] TCMB EVDS bağlantısı - elle girilen kira çapalarını endeksle güncel tutmak (`method: DERIVED`)
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
 - [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
@@ -120,10 +130,12 @@ data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
   neighborhoods.json      39 ilçe: ad, slug, koordinat
   rent-benchmarks.json    İlçe bazlı m² kira, kaynağı ve tarihiyle
   district-boundaries.json  Harita çokgenleri
+  rail-stations.json      343 raylı sistem istasyonu
 prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi
 src/lib/aggregate.ts      Semt göstergeleri + bütçe uygunluğu hesabı
+src/lib/geo.ts            Kuş uçuşu mesafe (haversine)
 src/app/api/              REST endpoint'leri
 src/components/           Dashboard, harita, grafikler
 ```

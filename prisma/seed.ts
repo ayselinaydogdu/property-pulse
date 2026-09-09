@@ -4,7 +4,7 @@
  * Buraya SADECE kaynağı belli veri girer. Bir sayının kaynağı ve tarihi yoksa
  * veritabanına giremez - şema da buna izin vermez (source/sourceUrl zorunlu).
  */
-import { PrismaClient, type PriceMethod } from "@prisma/client";
+import { PrismaClient, type SourceMethod, type StationStage } from "@prisma/client";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -29,18 +29,46 @@ type BoundaryFile = {
   boundaries: Record<string, number[][][]>;
 };
 
+type StationFile = {
+  _meta: { source: string; sourceUrl: string; method: SourceMethod; retrievedAt: string };
+  stations: {
+    name: string;
+    line: string;
+    mode: string;
+    stage: StationStage;
+    lat: number;
+    lng: number;
+  }[];
+};
+
 type BenchmarkFile = {
   sources: {
     key: string;
     name: string;
     url: string;
-    method: PriceMethod;
+    method: SourceMethod;
     retrievedAt: string;
     periodNote?: string;
     sampleNote?: string;
     benchmarks: { neighborhoodSlug: string; rentPerM2: number; sampleSize?: number }[];
   }[];
 };
+
+/**
+ * Işın atma (ray casting) ile nokta-poligon testi.
+ * Bir istasyonun hangi ilçeye düştüğünü bulmak için kullanılıyor.
+ */
+function pointInRing(lng: number, lat: number, ring: number[][]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    const intersects =
+      yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
 
 async function main() {
   const { neighborhoods } = readJson<NeighborhoodFile>("data", "neighborhoods.json");
@@ -102,6 +130,46 @@ async function main() {
     }
   }
   console.log(`${benchmarkCount} kira çapası yüklendi (${sources.length} kaynak)`);
+
+  // --- Raylı sistem istasyonları ---
+  const stationFile = readJson<StationFile>("data", "rail-stations.json");
+  const stationObservedAt = new Date(stationFile._meta.retrievedAt);
+
+  // Kaynak dosya tek doğru kaynak: her seed'de baştan yazılır
+  await prisma.transitStation.deleteMany({});
+
+  let unmatched = 0;
+  const stationRows = stationFile.stations.map((st) => {
+    // İstasyonun düştüğü ilçeyi sınır çokgeninden bul
+    let neighborhoodId: number | null = null;
+    for (const [slug, polys] of Object.entries(boundaries)) {
+      if (polys.some((ring) => pointInRing(st.lng, st.lat, ring))) {
+        neighborhoodId = idBySlug.get(slug) ?? null;
+        break;
+      }
+    }
+    if (neighborhoodId === null) unmatched++;
+    return {
+      name: st.name,
+      line: st.line,
+      mode: st.mode,
+      stage: st.stage,
+      lat: st.lat,
+      lng: st.lng,
+      neighborhoodId,
+      method: stationFile._meta.method,
+      source: stationFile._meta.source,
+      sourceUrl: stationFile._meta.sourceUrl,
+      observedAt: stationObservedAt,
+    };
+  });
+  await prisma.transitStation.createMany({ data: stationRows });
+  const existing = stationRows.filter((r) => r.stage === "EXISTING").length;
+  console.log(
+    `${stationRows.length} raylı sistem istasyonu yüklendi ` +
+      `(${existing} mevcut, ${stationRows.length - existing} inşaat halinde` +
+      `${unmatched > 0 ? `, ${unmatched} tanesi hiçbir ilçe sınırına düşmedi` : ""})`,
+  );
 
   const listings = await prisma.propertyListing.count();
   const priceEntries = await prisma.priceEntry.count();
