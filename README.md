@@ -32,6 +32,7 @@ npm run dev                   # http://localhost:3000
 |---|---|---|
 | İlçe bazlı m² kira | **Bağlı** - İstanbul'un 39 ilçesi | [KiraMetre](https://www.kirametre.com/kira/istanbul), yayınlanmış ortalama, 09.09.2026 |
 | İlçe koordinatları | Bağlı | [OpenStreetMap / Overpass API](https://overpass-api.de/api/interpreter), `admin_level=6` ilçe sınırlarının merkezi |
+| İlçe sınırları (harita çokgenleri) | Bağlı | Aynı Overpass sorgusu, `out geom`; Douglas-Peucker ile ~65 m toleransla sadeleştirildi (42.171 → 4.916 nokta, 96 KB) |
 | Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
 | Ulaşım süresi ve maliyeti | **Yok** | [İBB GTFS verisi](https://data.ibb.gov.tr/dataset/public-transport-gtfs-data) mevcut, bağlanmadı |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
@@ -63,6 +64,7 @@ out center tags;
 - **Olmayan kırılım uydurulmaz.** `GeoScope` alanı, şehir geneli bir fiyatın ilçelere dağıtılıp farklıymış gibi gösterilmesini engeller.
 - **Türetilmiş sayı etiketlenir.** `PriceMethod.DERIVED`, endeksle güncellenmiş gibi hesaplanmış değerleri gözlemlenmiş değerlerden ayırır.
 - **Kaynaklar çelişirse aralık gösterilir.** Aynı ilçe için birden fazla kaynak varsa tek sayı seçilmez; `hasSpread` ile min-max gösterilir. Sahte kesinlik de bir yanıltma biçimi.
+- **Kira alana boyanır, noktaya değil.** Kira ilçenin tamamına ait bir değer; ilçe merkezine nokta koymak Çatalca'nın 1.700 km²'si ile Güngören'in 7 km²'sini aynı büyüklükte gösterirdi. Harita gerçek ilçe sınırlarını boyuyor (choropleth), böylece coğrafi örüntü (batı ucuz, Boğaz hattı pahalı) tek bakışta okunuyor.
 - **Ham veri saklanır, gösterge hesaplanır.** `PropertyListing` tek tek kayıtlar için hazır ve şu an boş; kullanıcılar kendi kiralarını girdikçe ilçe ortalaması yayınlanmış çapa yerine kendi gözlemlerimizden hesaplanacak (medyan + IQR filtresi bunun için duruyor, eşik: 20 kayıt).
 - **Fiyatlar tam sayı.** Kuruş integer olarak tutulur; float yuvarlama hatası birikmez.
 - **Renkler doğrulanmış paletten.** Palet renk körlüğü ayrımı ve kontrast kontrollerinden hem açık hem koyu temada geçiyor. Tema renkleri `src/app/globals.css` içinde tek yerde tanımlı.
@@ -90,7 +92,7 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] **Uydurma verinin tamamı silindi** (500 sentetik ilan + 60 uydurma fiyat)
 - [x] Gerçek ilçe m² kira verisi, kaynağı ve tarihiyle
 - [x] Aggregasyon API'si + gelire göre karşılaştırma
-- [x] Leaflet harita, Recharts grafikler, açık/koyu tema
+- [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
 
@@ -101,7 +103,6 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
 - [ ] Aggregasyon fonksiyonları için birim testleri
 - [ ] `db push` yerine versiyonlu `prisma migrate`
-- [ ] İlçe sınırı GeoJSON choropleth (şema `Neighborhood.polygon` ile hazır)
 - [ ] Vercel'e deploy
 
 ## Teknoloji Yığını
@@ -116,6 +117,9 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 
 ```
 data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
+  neighborhoods.json      39 ilçe: ad, slug, koordinat
+  rent-benchmarks.json    İlçe bazlı m² kira, kaynağı ve tarihiyle
+  district-boundaries.json  Harita çokgenleri
 prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi

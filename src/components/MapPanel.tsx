@@ -24,6 +24,25 @@ function rampStep(value: number, min: number, max: number): string {
   return RAMP[Math.min(RAMP.length - 1, Math.floor(ratio * RAMP.length))];
 }
 
+function popupHtml(row: AffordabilityRow): string {
+  const source = row.rent?.sources[0];
+  return `<div style="font-family:system-ui,sans-serif;font-size:13px;min-width:200px">
+     <div style="font-weight:600;margin-bottom:4px">${row.name}</div>
+     <div>Kira (${row.areaM2} m²): <b>${
+       row.estimatedRent !== null ? formatTRY(row.estimatedRent) : "veri yok"
+     }</b></div>
+     <div>m² birim kira: <b>${row.rent ? `${row.rent.perM2} ₺` : "veri yok"}</b></div>
+     <div>Yaşam maliyeti: <b>${
+       row.estimatedCost !== null ? formatTRY(row.estimatedCost) : "veri yok"
+     }</b></div>
+     ${
+       source
+         ? `<div style="margin-top:4px;color:#898781;font-size:11px">Kaynak: ${source.source}</div>`
+         : ""
+     }
+   </div>`;
+}
+
 export default function MapPanel({
   rows,
   metric,
@@ -76,57 +95,65 @@ export default function MapPanel({
     };
   }, []);
 
-  // Veri / metrik / seçim değişince işaretçiler yeniden çizilir
+  // Veri / metrik / seçim değişince katman yeniden çizilir
   useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
     layer.clearLayers();
-    const points: L.LatLngExpression[] = [];
+    const bounds = L.latLngBounds([]);
 
     for (const row of rows) {
       const value = metricValue(row, metric);
-      // Verisi olmayan semti haritada göstermek, tahmin üretmek olurdu
+      // Verisi olmayan ilçeyi boyamak, tahmin üretmek olurdu
       if (value === null) continue;
       const isSelected = selectedSlug === row.slug;
+      const fill = rampStep(value, range.min, range.max);
 
-      const marker = L.circleMarker([row.lat, row.lng], {
-        radius: isSelected ? 16 : 10,
-        fillColor: rampStep(value, range.min, range.max),
-        // Seçim boyut + doygunlukla anlatılır; renk metriğe ayrılmıştır
-        fillOpacity: !selectedSlug || isSelected ? 0.9 : 0.5,
-        // 2px yüzey halkası: üst üste binen işaretçiler ayrışsın
-        color: "#fcfcfb",
-        weight: isSelected ? 3 : 2,
-      });
-
-      // 39 ilçede kalıcı etiketler üst üste biner - üstüne gelince gösteriliyor
-      marker.bindTooltip(row.name, { direction: "top", offset: [0, -8] });
-      const source = row.rent?.sources[0];
-      marker.bindPopup(
-        `<div style="font-family:system-ui,sans-serif;font-size:13px;min-width:200px">
-           <div style="font-weight:600;margin-bottom:4px">${row.name}</div>
-           <div>Kira (${row.areaM2} m²): <b>${
-             row.estimatedRent !== null ? formatTRY(row.estimatedRent) : "veri yok"
-           }</b></div>
-           <div>Yaşam maliyeti: <b>${
-             row.estimatedCost !== null ? formatTRY(row.estimatedCost) : "veri yok"
-           }</b></div>
-           ${
-             source
-               ? `<div style="margin-top:4px;color:#898781;font-size:11px">Kaynak: ${source.source}</div>`
-               : ""
-           }
-         </div>`,
-      );
-      marker.on("click", () => onSelectRef.current(row.slug));
-      marker.addTo(layer);
-      points.push([row.lat, row.lng]);
+      // Kira ilçenin tamamına ait bir değer; noktaya değil alana boyanır
+      if (row.polygon) {
+        // GeoJSON [lng, lat] -> Leaflet [lat, lng]
+        const rings = row.polygon.map((ring) =>
+          ring.map(([lng, lat]) => [lat, lng] as [number, number]),
+        );
+        const shape = L.polygon(rings, {
+          fillColor: fill,
+          fillOpacity: !selectedSlug || isSelected ? 0.75 : 0.4,
+          // Komşu ilçeler birbirinden ayrışsın diye yüzey rengiyle ince çizgi
+          color: isSelected ? "#0b0b0b" : "#fcfcfb",
+          weight: isSelected ? 2.5 : 1,
+        });
+        shape.bindTooltip(
+          `${row.name} · ${row.estimatedRent !== null ? formatTRY(row.estimatedRent) : "veri yok"}`,
+          { sticky: true },
+        );
+        shape.bindPopup(popupHtml(row));
+        shape.on("click", () => onSelectRef.current(row.slug));
+        shape.on("mouseover", () => shape.setStyle({ fillOpacity: 0.9 }));
+        shape.on("mouseout", () =>
+          shape.setStyle({ fillOpacity: !selectedSlug || isSelected ? 0.75 : 0.4 }),
+        );
+        shape.addTo(layer);
+        bounds.extend(shape.getBounds());
+      } else {
+        // Sınır verisi olmayan ilçe için merkez noktası
+        const marker = L.circleMarker([row.lat, row.lng], {
+          radius: 8,
+          fillColor: fill,
+          fillOpacity: 0.9,
+          color: "#fcfcfb",
+          weight: 2,
+        });
+        marker.bindTooltip(row.name, { direction: "top", offset: [0, -8] });
+        marker.bindPopup(popupHtml(row));
+        marker.on("click", () => onSelectRef.current(row.slug));
+        marker.addTo(layer);
+        bounds.extend([row.lat, row.lng]);
+      }
     }
 
-    // İstanbul batıda Çatalca'ya, doğuda Şile'ye kadar uzanıyor - sabit bir
-    // görünüm uç ilçeleri kırpıyor, o yüzden işaretçilere göre sığdırılıyor
-    if (points.length > 0 && !didFitRef.current) {
-      mapRef.current?.fitBounds(L.latLngBounds(points), { padding: [24, 24] });
+    // İstanbul batıda Çatalca'ya, doğuda Şile'ye uzanıyor - sabit görünüm uçları kırpıyor
+    if (bounds.isValid() && !didFitRef.current) {
+      mapRef.current?.fitBounds(bounds, { padding: [16, 16] });
       didFitRef.current = true;
     }
   }, [rows, metric, selectedSlug, range]);

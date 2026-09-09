@@ -25,6 +25,10 @@ type NeighborhoodFile = {
   }[];
 };
 
+type BoundaryFile = {
+  boundaries: Record<string, number[][][]>;
+};
+
 type BenchmarkFile = {
   sources: {
     key: string;
@@ -41,17 +45,28 @@ type BenchmarkFile = {
 async function main() {
   const { neighborhoods } = readJson<NeighborhoodFile>("data", "neighborhoods.json");
   const { sources } = readJson<BenchmarkFile>("data", "rent-benchmarks.json");
+  const { boundaries } = readJson<BoundaryFile>("data", "district-boundaries.json");
 
   const idBySlug = new Map<string, number>();
+  let withPolygon = 0;
   for (const n of neighborhoods) {
+    const polygon = boundaries[n.slug] ?? null;
+    if (polygon) withPolygon++;
     const row = await prisma.neighborhood.upsert({
       where: { slug: n.slug },
-      update: { name: n.name, district: n.district, city: n.city, lat: n.lat, lng: n.lng },
-      create: n,
+      update: {
+        name: n.name,
+        district: n.district,
+        city: n.city,
+        lat: n.lat,
+        lng: n.lng,
+        polygon,
+      },
+      create: { ...n, polygon },
     });
     idBySlug.set(n.slug, row.id);
   }
-  console.log(`${neighborhoods.length} semt yüklendi`);
+  console.log(`${neighborhoods.length} semt yüklendi (${withPolygon} tanesi sınır çokgeniyle)`);
 
   let benchmarkCount = 0;
   for (const source of sources) {

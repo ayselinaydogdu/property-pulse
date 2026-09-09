@@ -60,6 +60,8 @@ export type NeighborhoodStats = {
   city: string;
   lat: number;
   lng: number;
+  /** GeoJSON Polygon halkaları ([lng, lat]); sınır verisi yoksa null */
+  polygon: number[][][] | null;
   /** Kira verisi yoksa null */
   rent: RentEstimate | null;
   /** Yaşam maliyeti verisi yoksa null - sıfır DEĞİL */
@@ -208,6 +210,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       city: n.city,
       lat: n.lat,
       lng: n.lng,
+      polygon: (n.polygon as number[][][] | null) ?? null,
       rent,
       cost,
       missing,
