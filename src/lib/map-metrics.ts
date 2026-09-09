@@ -7,14 +7,15 @@ export type MapMetric = "rent" | "transit" | "cost" | "total";
 
 export const METRIC_LABELS: Record<MapMetric, string> = {
   rent: "Kira",
-  transit: "Raylı sisteme uzaklık",
+  transit: "Hızlı ulaşıma uzaklık",
   cost: "Yaşam maliyeti",
   total: "Toplam aylık",
 };
 
 export const METRIC_HINTS: Record<MapMetric, string> = {
   rent: "Koyu renk = pahalı.",
-  transit: "Koyu renk = raylı sistem uzak. İlçe merkezinden kuş uçuşu mesafe.",
+  transit:
+    "Koyu renk = hızlı ulaşım uzak. Metro, tramvay, Marmaray, metrobüs; ilçe merkezinden kuş uçuşu mesafe.",
   cost: "Koyu renk = pahalı.",
   total: "Koyu renk = pahalı.",
 };

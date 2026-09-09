@@ -30,14 +30,19 @@ type BoundaryFile = {
 };
 
 type StationFile = {
-  _meta: { source: string; sourceUrl: string; method: SourceMethod; retrievedAt: string };
-  stations: {
+  sources: {
     name: string;
-    line: string;
-    mode: string;
-    stage: StationStage;
-    lat: number;
-    lng: number;
+    url: string;
+    method: SourceMethod;
+    retrievedAt: string;
+    stations: {
+      name: string;
+      line: string;
+      mode: string;
+      stage: StationStage;
+      lat: number;
+      lng: number;
+    }[];
   }[];
 };
 
@@ -131,42 +136,43 @@ async function main() {
   }
   console.log(`${benchmarkCount} kira çapası yüklendi (${sources.length} kaynak)`);
 
-  // --- Raylı sistem istasyonları ---
-  const stationFile = readJson<StationFile>("data", "rail-stations.json");
-  const stationObservedAt = new Date(stationFile._meta.retrievedAt);
+  // --- Toplu ulaşım istasyonları (raylı sistem + metrobüs) ---
+  const stationFile = readJson<StationFile>("data", "transit-stations.json");
 
   // Kaynak dosya tek doğru kaynak: her seed'de baştan yazılır
   await prisma.transitStation.deleteMany({});
 
   let unmatched = 0;
-  const stationRows = stationFile.stations.map((st) => {
-    // İstasyonun düştüğü ilçeyi sınır çokgeninden bul
-    let neighborhoodId: number | null = null;
-    for (const [slug, polys] of Object.entries(boundaries)) {
-      if (polys.some((ring) => pointInRing(st.lng, st.lat, ring))) {
-        neighborhoodId = idBySlug.get(slug) ?? null;
-        break;
+  const stationRows = stationFile.sources.flatMap((src) =>
+    src.stations.map((st) => {
+      // İstasyonun düştüğü ilçeyi sınır çokgeninden bul
+      let neighborhoodId: number | null = null;
+      for (const [slug, polys] of Object.entries(boundaries)) {
+        if (polys.some((ring) => pointInRing(st.lng, st.lat, ring))) {
+          neighborhoodId = idBySlug.get(slug) ?? null;
+          break;
+        }
       }
-    }
-    if (neighborhoodId === null) unmatched++;
-    return {
-      name: st.name,
-      line: st.line,
-      mode: st.mode,
-      stage: st.stage,
-      lat: st.lat,
-      lng: st.lng,
-      neighborhoodId,
-      method: stationFile._meta.method,
-      source: stationFile._meta.source,
-      sourceUrl: stationFile._meta.sourceUrl,
-      observedAt: stationObservedAt,
-    };
-  });
+      if (neighborhoodId === null) unmatched++;
+      return {
+        name: st.name,
+        line: st.line,
+        mode: st.mode,
+        stage: st.stage,
+        lat: st.lat,
+        lng: st.lng,
+        neighborhoodId,
+        method: src.method,
+        source: src.name,
+        sourceUrl: src.url,
+        observedAt: new Date(src.retrievedAt),
+      };
+    }),
+  );
   await prisma.transitStation.createMany({ data: stationRows });
   const existing = stationRows.filter((r) => r.stage === "EXISTING").length;
   console.log(
-    `${stationRows.length} raylı sistem istasyonu yüklendi ` +
+    `${stationRows.length} toplu ulaşım istasyonu yüklendi ` +
       `(${existing} mevcut, ${stationRows.length - existing} inşaat halinde` +
       `${unmatched > 0 ? `, ${unmatched} tanesi hiçbir ilçe sınırına düşmedi` : ""})`,
   );

@@ -327,7 +327,7 @@ export default function Dashboard({
               style={{ background: "var(--page)", color: "var(--text-secondary)" }}
             >
               Ama ucuzluğun bedeli var:{" "}
-              <b>{railless.length} ilçede hiç raylı sistem istasyonu yok</b> (
+              <b>{railless.length} ilçede hiç hızlı ulaşım istasyonu yok</b> (
               {railless
                 .slice(0, 3)
                 .map((r) => r.name)
@@ -350,7 +350,7 @@ export default function Dashboard({
                 <tr style={{ color: "var(--text-muted)" }}>
                   <th className="py-1.5 text-left font-medium">Semt</th>
                   <th className="py-1.5 text-right font-medium">Kira</th>
-                  <th className="py-1.5 text-right font-medium">Raylı sistem</th>
+                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım</th>
                   <th className="py-1.5 text-right font-medium">Yaşam maliyeti</th>
                   <th className="py-1.5 text-right font-medium">Gelirin payı</th>
                 </tr>
@@ -468,15 +468,16 @@ export default function Dashboard({
                 </span>
                 <div>
                   <div className="font-medium">
-                    Raylı sistem · İstanbul ilçelerinde {totalStations} mevcut istasyon
+                    Hızlı ulaşım · İstanbul ilçelerinde {totalStations} mevcut istasyon
                   </div>
                   <SourceNote sources={[rows[0].transit.provenance]} />
                   <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
-                    Metro, tramvay, banliyö (Marmaray), füniküler ve teleferik. İnşaat
-                    halindeki istasyonlar erişim sayısına katılmıyor. Kaynaktaki 268 mevcut
-                    istasyonun 6 tanesi bir ilçe sınırına düşmüyor: 5'i Kocaeli'nde
-                    (Marmaray il dışına çıkıyor), Haliç ise metro köprüsünün üstünde.
-                    Uzaklık, ilçe merkezinden kuş uçuşudur - yürüme mesafesi değildir.
+                    Metro, tramvay, banliyö (Marmaray), füniküler, teleferik ve metrobüs.
+                    Metrobüs teknik olarak otobüstür ama ayrılmış yolda sabit istasyonlarla
+                    çalıştığı için erişim açısından raylı sisteme denk sayıldı. Sıradan
+                    otobüs durakları dahil değil: her ilçede var, ilçeleri ayırmıyor.
+                    İnşaat halindeki istasyonlar sayılmıyor. Uzaklık ilçe merkezinden kuş
+                    uçuşudur - yürüme mesafesi değildir.
                   </p>
                 </div>
               </li>

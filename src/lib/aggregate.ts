@@ -65,7 +65,7 @@ export type TransitAccess = {
    */
   nearestStationKm: number | null;
   nearestStationName: string | null;
-  /** İlçedeki mevcut istasyonların türleri: Metro, Tramvay, Banliyö... */
+  /** İlçedeki mevcut istasyonların türleri: Metro, Tramvay, Banliyö, Metrobüs... */
   modes: string[];
   provenance: Provenance;
 };
@@ -256,7 +256,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       };
       // İlçede istasyon olmaması EKSİK VERİ değil, bilinen bir sıfır - missing'e girmez
     } else {
-      missing.push("raylı sistem");
+      missing.push("hızlı ulaşım");
     }
 
     return {
