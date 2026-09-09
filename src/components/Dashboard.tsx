@@ -43,7 +43,7 @@ function formatDate(iso: string): string {
 /** Bir sayının nereden geldiğini rakamın yanında gösterir. */
 function SourceNote({ sources }: { sources: Provenance[] }) {
   return (
-    <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+    <span className="text-sm" style={{ color: "var(--text-muted)" }}>
       {sources.map((s, i) => (
         <span key={`${s.source}-${s.observedAt}`}>
           {i > 0 && " · "}
@@ -84,9 +84,9 @@ function Card({
     >
       {title && (
         <header className="mb-3">
-          <h2 className="text-sm font-semibold">{title}</h2>
+          <h2 className="text-base font-semibold">{title}</h2>
           {subtitle && (
-            <p className="mt-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+            <p className="mt-0.5 text-sm" style={{ color: "var(--text-muted)" }}>
               {subtitle}
             </p>
           )}
@@ -142,7 +142,7 @@ function NumberField({
           </span>
         )}
       </span>
-      <span className="text-xs leading-snug" style={{ color: "var(--text-muted)" }}>
+      <span className="text-sm leading-snug" style={{ color: "var(--text-muted)" }}>
         {help}
       </span>
     </label>
@@ -255,7 +255,7 @@ export default function Dashboard({
         </p>
       )}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <Card
           title="Harita"
           subtitle={
@@ -276,7 +276,7 @@ export default function Dashboard({
                   onClick={() => setMetric(key)}
                   aria-pressed={metric === key}
                   title={disabled ? "Bu katman için veri kaynağı bağlanmadı" : undefined}
-                  className="rounded-lg border px-2.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-lg border px-2.5 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-40"
                   style={{
                     borderColor: metric === key ? "var(--series-rent)" : "var(--border)",
                     color: metric === key ? "var(--series-rent)" : "var(--text-secondary)",
@@ -331,7 +331,7 @@ export default function Dashboard({
         </Card>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <Card
           title="Semt karşılaştırma tablosu"
           subtitle={`${rows.length} ilçe, ucuzdan pahalıya`}
@@ -371,17 +371,17 @@ export default function Dashboard({
                         row.transit.existingStations > 0 ? (
                           <>
                             {row.transit.existingStations} istasyon
-                            <span
-                              className="ml-1 text-xs"
-                              style={{ color: "var(--text-muted)" }}
-                            >
+                            <span className="ml-1" style={{ color: "var(--text-muted)" }}>
                               {formatKm(row.transit.nearestStationKm ?? 0)}
                             </span>
                           </>
                         ) : (
-                          <span style={{ color: "var(--status-critical)" }}>
+                          <span
+                            className="font-semibold"
+                            style={{ color: "var(--status-critical)" }}
+                          >
                             yok
-                            <span className="ml-1 text-xs">
+                            <span className="ml-1 font-normal">
                               en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
                             </span>
                           </span>
@@ -403,7 +403,7 @@ export default function Dashboard({
                           {formatPct(row.knownBurdenPct, 0)}
                           {row.missing.length > 0 && (
                             <span
-                              className="ml-1 text-xs"
+                              className="ml-1"
                               title={`${row.missing.join(", ")} verisi eksik - gerçek oran daha yüksek`}
                               style={{ color: "var(--text-muted)" }}
                             >
@@ -420,8 +420,8 @@ export default function Dashboard({
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-            <b>+</b> işareti: bu semtte eksik gider kalemi var, gerçek oran gösterilenden
+          <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
+            <b>+</b> işareti: bu ilçede eksik gider kalemi var, gerçek oran gösterilenden
             yüksek. Bu yüzden hiçbir semt için &quot;bütçene uygun&quot; hükmü verilmiyor.
           </p>
         </Card>
@@ -442,12 +442,12 @@ export default function Dashboard({
                 {rows[0]?.rent ? (
                   <SourceNote sources={rows[0].rent.sources} />
                 ) : (
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>
                     yüklenmedi
                   </span>
                 )}
                 {rows[0]?.rent?.sources[0]?.note && (
-                  <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
                     {rows[0].rent.sources[0].note}
                   </p>
                 )}
@@ -463,7 +463,7 @@ export default function Dashboard({
                     Raylı sistem · İstanbul ilçelerinde {totalStations} mevcut istasyon
                   </div>
                   <SourceNote sources={[rows[0].transit.provenance]} />
-                  <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
                     Metro, tramvay, banliyö (Marmaray), füniküler ve teleferik. İnşaat
                     halindeki istasyonlar erişim sayısına katılmıyor. Kaynaktaki 268 mevcut
                     istasyonun 6 tanesi bir ilçe sınırına düşmüyor: 5'i Kocaeli'nde
@@ -495,7 +495,7 @@ export default function Dashboard({
                   <div className="font-medium" style={{ color: "var(--text-secondary)" }}>
                     {gap.name}
                   </div>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                     {gap.note}
                   </p>
                 </div>
@@ -509,7 +509,7 @@ export default function Dashboard({
         <Card className="mb-6" title={`${selected.name} - kira verisi`}>
           <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
             <div>
-              <dt className="text-xs" style={{ color: "var(--text-muted)" }}>
+              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
                 m² birim kira
               </dt>
               <dd className="tabular mt-0.5 font-medium">
@@ -519,7 +519,7 @@ export default function Dashboard({
               </dd>
             </div>
             <div>
-              <dt className="text-xs" style={{ color: "var(--text-muted)" }}>
+              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {selected.areaM2} m² için
               </dt>
               <dd className="tabular mt-0.5 font-medium">
@@ -527,7 +527,7 @@ export default function Dashboard({
               </dd>
             </div>
             <div>
-              <dt className="text-xs" style={{ color: "var(--text-muted)" }}>
+              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
                 Dayanak
               </dt>
               <dd className="mt-0.5 font-medium">
@@ -537,7 +537,7 @@ export default function Dashboard({
               </dd>
             </div>
             <div>
-              <dt className="text-xs" style={{ color: "var(--text-muted)" }}>
+              <dt className="text-sm" style={{ color: "var(--text-muted)" }}>
                 Eksik veri
               </dt>
               <dd className="mt-0.5 font-medium">
@@ -551,7 +551,7 @@ export default function Dashboard({
         </Card>
       )}
 
-      <footer className="text-xs" style={{ color: "var(--text-muted)" }}>
+      <footer className="text-sm" style={{ color: "var(--text-muted)" }}>
         <p>
           Kira değerleri yayınlanmış ilçe ortalamalarından alınmıştır ve seçtiğin m² ile
           çarpılarak hesaplanır - tek tek ilanlara bakılmamıştır, gerçek kiralar bu değerin

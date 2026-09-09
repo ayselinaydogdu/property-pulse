@@ -186,7 +186,7 @@ export default function MapPanel({
         aria-label={`${METRIC_LABELS[metric]} haritası`}
       />
       <div
-        className="mt-3 flex items-center gap-2 text-xs"
+        className="mt-3 flex items-center gap-2 text-sm"
         style={{ color: "var(--text-muted)" }}
       >
         <span>{formatMetric(range.min, metric)}</span>

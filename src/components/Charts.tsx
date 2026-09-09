@@ -15,7 +15,8 @@ import {
 import type { AffordabilityRow } from "@/lib/aggregate";
 import { formatShortTRY, formatTRY } from "@/lib/format";
 
-const AXIS = { fill: "var(--text-muted)", fontSize: 12 };
+// Sayfanın gövde metniyle aynı boyut (text-sm = 14px)
+const AXIS = { fill: "var(--text-muted)", fontSize: 14 };
 
 type Datum = {
   slug: string;
@@ -46,7 +47,7 @@ function RentTooltip({
       <div className="mb-1 font-medium">{d.name}</div>
       <div className="tabular">{formatTRY(d.kira)}/ay</div>
       {d.rangeLabel && (
-        <div className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+        <div className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
           Kaynaklar farklı: {d.rangeLabel}
         </div>
       )}
@@ -98,7 +99,7 @@ export function RentChart({
   return (
     <>
       {withRent.length > data.length && (
-        <p className="mb-2 text-xs" style={{ color: "var(--text-muted)" }}>
+        <p className="mb-2 text-sm" style={{ color: "var(--text-muted)" }}>
           {withRent.length} ilçenin en ucuz {data.length} tanesi. Tamamı aşağıdaki tabloda.
         </p>
       )}
@@ -115,7 +116,7 @@ export function RentChart({
         <YAxis
           type="category"
           dataKey="name"
-          width={84}
+          width={116}
           tick={AXIS}
           axisLine={false}
           tickLine={false}
@@ -130,7 +131,7 @@ export function RentChart({
               value: "Gelirin",
               position: "top",
               fill: "var(--text-muted)",
-              fontSize: 11,
+              fontSize: 14,
             }}
           />
         )}
@@ -157,7 +158,7 @@ export function RentChart({
             dataKey="kira"
             position="right"
             formatter={(v) => formatShortTRY(Number(v))}
-            style={{ fill: "var(--text-secondary)", fontSize: 11 }}
+            style={{ fill: "var(--text-secondary)", fontSize: 14 }}
           />
         </Bar>
       </BarChart>
