@@ -44,6 +44,7 @@ export async function POST(request: Request) {
         price: contribution.monthlyRent,
         areaM2: contribution.areaM2,
         rooms: contribution.rooms,
+        subArea: contribution.subArea,
         observedAt,
         method: "OBSERVED",
         source: SOURCE,

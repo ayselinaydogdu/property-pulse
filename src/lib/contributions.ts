@@ -19,6 +19,8 @@ export type RentContribution = {
   areaM2: number;
   monthlyRent: number;
   rooms?: string | null;
+  /** Mahalle/semt - ilçe içindeki farkı zamanla görebilmek için */
+  subArea?: string | null;
 };
 
 export type PriceContribution = {
@@ -47,7 +49,7 @@ export function parseContribution(body: unknown): { ok: true; value: Contributio
   const data = body as Record<string, unknown>;
 
   if (data.kind === "rent") {
-    const { neighborhoodSlug, areaM2, monthlyRent, rooms } = data;
+    const { neighborhoodSlug, areaM2, monthlyRent, rooms, subArea } = data;
     if (typeof neighborhoodSlug !== "string" || !neighborhoodSlug) {
       return { ok: false, error: "İlçe seçilmedi" };
     }
@@ -71,6 +73,8 @@ export function parseContribution(body: unknown): { ok: true; value: Contributio
         areaM2: Math.round(areaM2),
         monthlyRent: Math.round(monthlyRent),
         rooms: typeof rooms === "string" && rooms.trim() ? rooms.trim().slice(0, 10) : null,
+        subArea:
+          typeof subArea === "string" && subArea.trim() ? subArea.trim().slice(0, 60) : null,
       },
     };
   }

@@ -99,6 +99,9 @@ model PropertyListing {
   price          Int
   areaM2         Int
   rooms          String?
+  /// Mahalle/semt. İlçe tek bir rakamla temsil ediliyor ama Moda ile
+  /// Fikirtepe aynı değil; katkılar biriktikçe mahalle kırılımı mümkün olacak.
+  subArea        String?
   observedAt     DateTime
   method         SourceMethod
   source         String

@@ -42,6 +42,35 @@ export function computeIndexFactor(
   return { factor: latest.value / baseline.value, baseline, latest };
 }
 
+export type RentSourceValue = { perM2: number; provenance: Provenance };
+
+/**
+ * Aynı ilçe için birden fazla kaynağı birleştirir.
+ *
+ * Kaynaklar çelişince tek bir sayı seçmek sahte kesinlik olur: hesapta
+ * medyan kullanılır ama arayüz alt-üst sınırı da gösterir. Bu yüzden
+ * `hasSpread`, kaynakların gerçekten ayrıştığını söyler.
+ */
+export function combineRentSources(values: RentSourceValue[]): {
+  perM2: number;
+  perM2Min: number;
+  perM2Max: number;
+  hasSpread: boolean;
+  sources: Provenance[];
+} | null {
+  if (values.length === 0) return null;
+  const numbers = values.map((v) => v.perM2);
+  const perM2Min = Math.min(...numbers);
+  const perM2Max = Math.max(...numbers);
+  return {
+    perM2: round(median(numbers), 1),
+    perM2Min: round(perM2Min, 1),
+    perM2Max: round(perM2Max, 1),
+    hasSpread: perM2Min !== perM2Max,
+    sources: values.map((v) => v.provenance),
+  };
+}
+
 export type RentIndexInfo = {
   /** TCMB'ye göre İstanbul geneli birim kira, TL/m² */
   cityPerM2: number;
@@ -234,89 +263,73 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
     const missing: string[] = [];
 
     // --- Kira ---
-    let rent: RentEstimate | null = null;
+    // İki olası kaynak var: yayınlanmış ilçe ortalaması ve yeterince katkı
+    // birikmişse kendi kayıtlarımız. İkisi de varsa ikisi de gösterilir -
+    // birini seçip diğerini gizlemek, kaynakların ayrıştığı bilgisini yok eder.
+    const rentValues: RentSourceValue[] = [];
 
     if (n.listings.length >= MIN_OWN_OBSERVATIONS) {
-      // Yeterli kendi gözlemimiz var: medyan + aykırı değer filtresi
       const used = iqrFilter(n.listings, (l) => l.price / l.areaM2);
-      const perM2 = round(median(used.map((l) => l.price / l.areaM2)), 1);
-      rent = {
-        perM2Min: perM2,
-        perM2Max: perM2,
-        perM2,
-        hasSpread: false,
-        basis: "OWN_OBSERVATIONS",
-        observationCount: used.length,
-        sources: [
-          {
-            source: "Kullanıcı katkısı",
-            sourceUrl: null,
-            method: "OBSERVED",
-            observedAt: new Date(
-              Math.max(...used.map((l) => l.observedAt.getTime())),
-            ).toISOString(),
-            sampleSize: used.length,
-            note: `${used.length} kayıt (aykırı değerler elendi)`,
-          },
-        ],
-        // Kendi ölçümümüz zaten güncel; endeksleme uygulanmaz
-        index: null,
-      };
-    } else if (n.benchmarks.length > 0) {
-      // Her kaynağın en güncel satırı - aynı kaynağın eski ölçümü tekrar sayılmasın
-      const latestPerSource = new Map<string, (typeof n.benchmarks)[number]>();
-      for (const b of n.benchmarks) {
-        if (!latestPerSource.has(b.source)) latestPerSource.set(b.source, b);
-      }
-      const rows = [...latestPerSource.values()];
-      const values = rows.map((b) => b.rentPerM2);
-      const perM2Min = Math.min(...values);
-      const perM2Max = Math.max(...values);
+      rentValues.push({
+        perM2: round(median(used.map((l) => l.price / l.areaM2)), 1),
+        provenance: {
+          source: "Kullanıcı katkısı",
+          sourceUrl: null,
+          method: "OBSERVED",
+          observedAt: new Date(
+            Math.max(...used.map((l) => l.observedAt.getTime())),
+          ).toISOString(),
+          sampleSize: used.length,
+          note: `${used.length} kayıt, aykırı değerler elendi`,
+        },
+      });
+    }
 
-      // Çapa bayatladıysa TCMB serisiyle oranlanarak güncellenir.
-      // Bu bir ölçüm değil çıkarımdır; kaynaklara DERIVED satırı eklenir.
-      const indexing = computeIndexFactor(rows[0].retrievedAt, indexPoints);
-      const factor = indexing?.factor ?? null;
-      const baseline = indexing?.baseline ?? null;
+    // Her kaynağın en güncel satırı - aynı kaynağın eski ölçümü tekrar sayılmasın
+    const latestPerSource = new Map<string, (typeof n.benchmarks)[number]>();
+    for (const b of n.benchmarks) {
+      if (!latestPerSource.has(b.source)) latestPerSource.set(b.source, b);
+    }
+    const benchmarkRows = [...latestPerSource.values()];
 
-      const sources = rows.map((b) =>
-        toProvenance({
+    // Çapa bayatladıysa TCMB serisiyle oranlanır. Ölçüm değil çıkarımdır.
+    const indexing = benchmarkRows.length
+      ? computeIndexFactor(benchmarkRows[0].retrievedAt, indexPoints)
+      : null;
+    const factor = indexing?.factor ?? null;
+
+    for (const b of benchmarkRows) {
+      rentValues.push({
+        perM2: round(b.rentPerM2 * (factor ?? 1), 1),
+        provenance: toProvenance({
           source: b.source,
           sourceUrl: b.sourceUrl,
-          method: b.method,
+          method: factor === null ? b.method : "DERIVED",
           observedAt: b.retrievedAt,
           sampleSize: b.sampleSize,
-          note: b.note,
+          note:
+            factor === null
+              ? b.note
+              : `${b.note ?? ""} Çapa ${indexing?.baseline.period} tarihliydi; ${indexing?.latest.period} verisiyle ×${round(factor, 3)} güncellendi.`.trim(),
         }),
-      );
-      if (factor !== null && latestIndex && baseline) {
-        sources.push({
-          source: `${latestIndex.source} - ${latestIndex.series}`,
-          sourceUrl: latestIndex.sourceUrl,
-          method: "DERIVED",
-          observedAt: latestIndex.retrievedAt.toISOString(),
-          sampleSize: null,
-          note: `Çapa ${baseline.period} tarihliydi; ${latestIndex.period} verisiyle ×${round(factor, 3)} oranında güncellendi.`,
-        });
-      }
+      });
+    }
 
-      const scale = (v: number) => round(v * (factor ?? 1), 1);
+    const combined = combineRentSources(rentValues);
+    let rent: RentEstimate | null = null;
 
+    if (combined) {
+      const ownCount = n.listings.length;
       rent = {
-        perM2Min: scale(perM2Min),
-        perM2Max: scale(perM2Max),
-        // Kaynaklar çelişiyorsa medyan alınır; tek kaynakta zaten o değer
-        perM2: scale(median(values)),
-        hasSpread: perM2Min !== perM2Max,
-        basis: "BENCHMARK",
-        observationCount: n.listings.length,
-        sources,
+        ...combined,
+        basis: ownCount >= MIN_OWN_OBSERVATIONS ? "OWN_OBSERVATIONS" : "BENCHMARK",
+        observationCount: ownCount,
         index: latestIndex
           ? {
               cityPerM2: latestIndex.value,
               period: latestIndex.period,
               appliedFactor: factor === null ? null : round(factor, 3),
-              baselinePeriod: factor === null ? null : (baseline?.period ?? null),
+              baselinePeriod: factor === null ? null : (indexing?.baseline.period ?? null),
               provenance: toProvenance({
                 source: latestIndex.source,
                 sourceUrl: latestIndex.sourceUrl,

@@ -103,6 +103,8 @@ out center tags;
 ## Mimarideki ana kararlar
 
 - **Sepetin tanımı varsayım, fiyatları veri.** `data/cost-basket-definition.json` sadece "sepette ne var" der; `monthlyQty` (ayda kaç kahve) ölçülmüş bir değer değil, açıkça belirtilen bir varsayımdır. Fiyatlar kullanıcı katkısından gelir.
+- **Kaynaklar birbirini değiştirmez, yan yana durur.** Bir ilçenin kirası hem yayınlanmış ortalamadan hem yeterince katkı birikmişse kendi kayıtlarımızdan gelebilir. Önceki tasarımda kendi ölçümümüz eşiği geçince diğerini gizliyordu; artık ikisi de gösteriliyor ve ayrıştıklarında alt-üst sınır çıkıyor. Birini seçip diğerini gizlemek, kaynakların uyuşmadığı bilgisini yok ediyordu.
+- **İlçe tek rakamla temsil ediliyor, bu bir sınır.** Moda ile Fikirtepe aynı değil ama kaynak ilçe düzeyinde yayınlıyor. Katkı formundaki isteğe bağlı mahalle alanı bu kırılımın verisini biriktiriyor; ilçe verisinden mahalle verisi türetilemez, o uydurma olurdu.
 - **Kaynaksız sayı giremez.** Her fiyat kaydında `source`, `sourceUrl`, `observedAt`, `method` zorunlu. Uydurma veriyi disiplinle değil, şema kısıtıyla engelliyoruz.
 - **Bilinmeyen `null` döner, sıfır sayılmaz.** Verisi olmayan kalem toplama dahil edilmez; arayüz "veri yok" gösterir ve eksik kalem varsa oranın yanına `+` koyar. Eksik veri varken hiçbir semt için "bütçene uygun" hükmü verilmez (`affordable: null`).
 - **Olmayan kırılım uydurulmaz.** `GeoScope` alanı, şehir geneli bir fiyatın ilçelere dağıtılıp farklıymış gibi gösterilmesini engeller.
@@ -143,9 +145,11 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", "+ eksik kalem", veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
-- [x] **Birim testler** (59 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
+- [x] **Birim testler** (67 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
+- [x] **Çok kaynaklı kira** - yayınlanmış ortalama ile kullanıcı katkısı birbirini değiştirmiyor, ikisi birden gösteriliyor; ayrıştıklarında alt-üst sınır çıkıyor
+- [x] **Mahalle alanı** - katkı formunda isteğe bağlı; ilçe içi kırılım için veri birikiyor
 - [x] **Versiyonlu migration** - `prisma/migrations/` altında; şema değişikliği artık tabloları boşaltmayı gerektirmiyor
 - [x] **Kira + işe yakınlık ödünleşimi** - iş yeri girilince liste işe yakınlığa göre sıralanıyor ve baskılanmamış ilçeler yıldızlanıyor
 - [x] **İşe gidiş güzergâhı** - kullanıcı iş yerine yakın istasyonu girer, her ilçeden kaç durak / kaç aktarma / kaç km olduğu hesaplanır. Dijkstra, 314 istasyonluk ağ üzerinde. Kadıköy → Levent için M4 → Marmaray → M2 çıkarıyor, gerçek güzergâhla aynı
@@ -155,7 +159,6 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 
 ### Sıradaki
 - [ ] **Yolculuk süresi (dakika)** - güzergâh hesabı çalışıyor ama süre yok: raylı sistem hız verisi bulunamadı. Hat uzunluğu + uçtan uca sefer süresi yayınlanmış bir kaynak bulunursa eklenebilir.
-- [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
 - [ ] Vercel'e deploy
 
 ## Teknoloji Yığını

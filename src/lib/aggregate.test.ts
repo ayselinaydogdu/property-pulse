@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   applyAffordability,
+  combineRentSources,
   computeIndexFactor,
   type NeighborhoodStats,
 } from "./aggregate";
@@ -152,5 +153,52 @@ describe("computeIndexFactor", () => {
 
   it("seri boşsa null döner", () => {
     assert.equal(computeIndexFactor(new Date("2026-05-01"), []), null);
+  });
+});
+
+describe("combineRentSources", () => {
+  const prov = (source: string) => ({
+    source,
+    sourceUrl: null,
+    method: "OBSERVED" as const,
+    observedAt: "2026-09-10T00:00:00.000Z",
+    sampleSize: null,
+    note: null,
+  });
+
+  it("tek kaynakta aralık göstermez", () => {
+    const result = combineRentSources([{ perM2: 559, provenance: prov("KiraMetre") }]);
+    assert.ok(result);
+    assert.equal(result.perM2, 559);
+    assert.equal(result.perM2Min, 559);
+    assert.equal(result.perM2Max, 559);
+    assert.equal(result.hasSpread, false);
+  });
+
+  it("kaynaklar çelişince alt-üst sınırı verir ve medyanı kullanır", () => {
+    const result = combineRentSources([
+      { perM2: 559, provenance: prov("KiraMetre") },
+      { perM2: 583, provenance: prov("Kullanıcı katkısı") },
+    ]);
+    assert.ok(result);
+    assert.equal(result.perM2Min, 559);
+    assert.equal(result.perM2Max, 583);
+    assert.equal(result.perM2, 571);
+    assert.equal(result.hasSpread, true);
+    assert.equal(result.sources.length, 2);
+  });
+
+  it("aynı değeri veren kaynaklarda aralık yoktur", () => {
+    const result = combineRentSources([
+      { perM2: 500, provenance: prov("A") },
+      { perM2: 500, provenance: prov("B") },
+    ]);
+    assert.ok(result);
+    assert.equal(result.hasSpread, false);
+    assert.equal(result.sources.length, 2, "aralık olmasa da her iki kaynak listelenir");
+  });
+
+  it("kaynak yoksa null döner - tahmin üretmez", () => {
+    assert.equal(combineRentSources([]), null);
   });
 });

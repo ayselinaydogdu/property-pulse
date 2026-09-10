@@ -57,6 +57,7 @@ export default function ContributionForm({
   const [areaM2, setAreaM2] = useState("");
   const [monthlyRent, setMonthlyRent] = useState("");
   const [rooms, setRooms] = useState("");
+  const [subArea, setSubArea] = useState("");
   const [itemSlug, setItemSlug] = useState("");
   const [price, setPrice] = useState("");
 
@@ -93,6 +94,7 @@ export default function ContributionForm({
       setAreaM2("");
       setMonthlyRent("");
       setRooms("");
+      setSubArea("");
       setPrice("");
     } catch {
       setResult({ ok: false, text: "Sunucuya ulaşılamadı." });
@@ -145,6 +147,7 @@ export default function ContributionForm({
               areaM2: Number(areaM2),
               monthlyRent: Number(monthlyRent),
               rooms: rooms || null,
+              subArea: subArea || null,
             });
           }}
         >
@@ -184,6 +187,17 @@ export default function ContributionForm({
               />
             </Field>
           </div>
+          <Field label={`Mahalle (isteğe bağlı) - ${neighborhoodName} içinde neresi?`}>
+            <input
+              type="text"
+              maxLength={60}
+              placeholder="ör. Moda, Fikirtepe"
+              value={subArea}
+              onChange={(e) => setSubArea(e.target.value)}
+              className="w-full rounded-lg border px-2 py-1.5"
+              style={inputStyle}
+            />
+          </Field>
           <button
             type="submit"
             disabled={pending}
@@ -192,6 +206,10 @@ export default function ContributionForm({
           >
             {pending ? "Gönderiliyor…" : `${neighborhoodName} için gönder`}
           </button>
+          <p style={{ color: "var(--text-muted)" }}>
+            İlçe tek bir rakamla temsil ediliyor ama Moda ile Fikirtepe aynı değil;
+            mahalle yazarsan zamanla o kırılım da mümkün olur.
+          </p>
           <p style={{ color: "var(--text-muted)" }}>
             {ownRentContributions} katkı var.{" "}
             {kalan > 0

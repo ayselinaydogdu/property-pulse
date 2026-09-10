@@ -14,7 +14,8 @@ describe("parseContribution - kira", () => {
   it("geçerli katkıyı kabul eder", () => {
     const result = parseContribution(gecerli);
     assert.ok(result.ok);
-    assert.deepEqual(result.value, { ...gecerli, kind: "rent" });
+    // Verilmeyen isteğe bağlı alanlar null olarak normalleşir
+    assert.deepEqual(result.value, { ...gecerli, kind: "rent", subArea: null });
   });
 
   it("sınırların dışındaki kirayı reddeder", () => {
@@ -78,5 +79,38 @@ describe("parseContribution - genel", () => {
   it("nesne olmayan gövdeyi reddeder", () => {
     assert.equal(parseContribution(null).ok, false);
     assert.equal(parseContribution("merhaba").ok, false);
+  });
+});
+
+describe("parseContribution - mahalle", () => {
+  const temel = {
+    kind: "rent",
+    neighborhoodSlug: "kadikoy",
+    areaM2: 90,
+    monthlyRent: 48_000,
+  };
+
+  it("mahalleyi kaydeder", () => {
+    const result = parseContribution({ ...temel, subArea: "Moda" });
+    assert.ok(result.ok && result.value.kind === "rent");
+    assert.equal(result.value.subArea, "Moda");
+  });
+
+  it("boş mahalle null olur", () => {
+    const result = parseContribution({ ...temel, subArea: "   " });
+    assert.ok(result.ok && result.value.kind === "rent");
+    assert.equal(result.value.subArea, null);
+  });
+
+  it("mahalle verilmezse null olur - zorunlu değil", () => {
+    const result = parseContribution(temel);
+    assert.ok(result.ok && result.value.kind === "rent");
+    assert.equal(result.value.subArea, null);
+  });
+
+  it("aşırı uzun mahalle adı kırpılır", () => {
+    const result = parseContribution({ ...temel, subArea: "a".repeat(200) });
+    assert.ok(result.ok && result.value.kind === "rent");
+    assert.equal(result.value.subArea?.length, 60);
   });
 });
