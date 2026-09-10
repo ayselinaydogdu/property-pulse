@@ -82,10 +82,10 @@ body {
 h1,
 h2,
 h3 {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
   /* Başlıklarda satır aralığı gövdeden dar olmalı, yoksa dağınık görünür */
   line-height: 1.25;
-  /* Inter büyük puntoda ferah durur; hafif sıkıştırmak toparlıyor */
-  letter-spacing: -0.018em;
+  letter-spacing: -0.02em;
 }
 
 /* Sayı sütunları hizalansın; sıfırın çizgili biçimi karışıklığı önler */

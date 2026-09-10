@@ -361,7 +361,7 @@ export default function Dashboard({
     <main className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">PropertyPulse</h1>
+          <h1 className="text-3xl font-bold tracking-tight">PropertyPulse</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
             İstanbul ilçelerini kira maliyetiyle karşılaştır. Ekrandaki her sayının
             kaynağı ve tarihi yazılıdır; kaynağı olmayan hiçbir değer gösterilmez.

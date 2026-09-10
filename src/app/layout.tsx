@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 /**
@@ -11,6 +11,18 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"], // latin-ext: Türkçe ş, ğ, ı, İ
   display: "swap",
   variable: "--font-sans",
+});
+
+/**
+ * Başlıklar için ayrı tip. Space Grotesk'in harf biçimleri karakterli ama
+ * ciddi - oyun tiplerinin yuvarlaklığına kaçmıyor. Sadece başlıklarda;
+ * gövde ve özellikle RAKAMLAR Inter'de kalıyor çünkü hizalı sütunlar
+ * okunurluğun temeli.
+ */
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +41,7 @@ try {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className={inter.variable} suppressHydrationWarning>
+    <html lang="tr" className={`${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
