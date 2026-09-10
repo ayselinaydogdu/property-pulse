@@ -6,7 +6,7 @@ import type { AffordabilityRow, DistrictStation, Provenance } from "@/lib/aggreg
 import { RentChart } from "@/components/Charts";
 import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
 import ThemeToggle from "@/components/ThemeToggle";
-import { formatKm, formatPct, formatTRY } from "@/lib/format";
+import { formatDepartures, formatKm, formatPct, formatTRY } from "@/lib/format";
 
 // Leaflet window nesnesine ihtiyaç duyuyor - sunucuda render edilmemeli
 const MapPanel = dynamic(() => import("@/components/MapPanel"), {
@@ -630,10 +630,10 @@ export default function Dashboard({
                 <dl className="mt-2 space-y-1.5">
                   <div className="flex justify-between gap-4">
                     <dt style={{ color: "var(--text-muted)" }}>
-                      Bir durağa günde uğrayan otobüs
+                      Bir durağa günde yapılan sefer
                     </dt>
                     <dd className="tabular font-medium">
-                      {selected.bus.departuresPerStop}
+                      {formatDepartures(selected.bus.departuresPerStop)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
@@ -652,8 +652,9 @@ export default function Dashboard({
                   </div>
                 </dl>
                 <p className="mt-2" style={{ color: "var(--text-muted)" }}>
-                  Durak sayısı ilçeleri ayırmaz - her ilçede otobüs durağı var. Ayırt eden
-                  şey sıklık. Metrobüs bu sayılara dahil değil, yukarıda ayrı sayılıyor.
+                  Sayılan şey araç değil, o durağa yapılan sefer - aynı otobüs gün içinde
+                  defalarca geçer. Durak sayısı ilçeleri ayırmaz, ayırt eden şey sıklık.
+                  Metrobüs bu sayılara dahil değil, yukarıda ayrı sayılıyor.
                 </p>
                 <p className="mt-2">
                   <SourceNote sources={[selected.bus.provenance]} />
@@ -729,8 +730,9 @@ export default function Dashboard({
                   <SourceNote sources={[rows[0].bus.provenance]} />
                   <p className="mt-1" style={{ color: "var(--text-muted)" }}>
                     Hafta içi sefer verisinden hesaplandı. Durak sayısı değil{" "}
-                    <b>sıklık</b> ölçülüyor: Fatih&apos;te bir durağa günde ~455 otobüs
-                    uğrarken Şile&apos;de ~9. Metrobüs hariç.
+                    <b>sefer sıklığı</b> ölçülüyor: Fatih&apos;te ortalama bir durağa
+                    günde ~455 sefer yapılırken Şile&apos;de ~9. Sayılan şey araç değil,
+                    o durağa yapılan sefer. Metrobüs hariç.
                   </p>
                 </div>
               </li>

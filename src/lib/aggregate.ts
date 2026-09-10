@@ -107,7 +107,7 @@ export type BusAccess = {
   stops: number;
   lines: number;
   weekdayDepartures: number;
-  /** Ortalama bir durağa hafta içi günde uğrayan otobüs - ilçe büyüklüğünden bağımsız */
+  /** Ortalama bir durağa hafta içi günde yapılan sefer - ilçe büyüklüğünden bağımsız */
   departuresPerStop: number;
   /** 39 ilçe içindeki sırası (1 = en sık) */
   rank: number;

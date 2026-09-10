@@ -179,7 +179,7 @@ def main() -> None:
                     "retrievedAt": "2026-09-10",
                     "producedBy": "scripts/build_bus_service.py",
                     "caveats": [
-                        "departuresPerStop, ortalama bir durağa hafta içi günde uğrayan otobüs sayısıdır; ilçe büyüklüğünden bağımsızdır.",
+                        "departuresPerStop, ortalama bir durağa hafta içi günde yapılan sefer sayısıdır (araç sayısı değil - aynı otobüs gün içinde defalarca geçer); ilçe büyüklüğünden bağımsızdır.",
                         "Çok hatlı aktarma durakları bu sayıyı yukarı çeker.",
                         "Sefer sıklığı, otobüsün gitmek istediğin yere gidip gitmediğini ölçmez.",
                         "Koordinatlar kaynakta bozuk geliyor, onarılıp İstanbul sınır kutusuyla doğrulandı.",
@@ -195,7 +195,7 @@ def main() -> None:
     print(f"\n{len(districts)} ilçe yazıldı -> {OUT.relative_to(ROOT)}")
     top = sorted(districts.items(), key=lambda kv: -kv[1]["departuresPerStop"])
     for slug, v in top[:3] + top[-3:]:
-        print(f"  {slug:16} durak {v['stops']:4}  hat {v['lines']:4}  durak başına/gün {v['departuresPerStop']:7}")
+        print(f"  {slug:16} durak {v['stops']:4}  hat {v['lines']:4}  sefer/durak/gün {v['departuresPerStop']:7}")
 
 
 if __name__ == "__main__":

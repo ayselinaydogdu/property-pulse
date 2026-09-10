@@ -183,8 +183,9 @@ model BusService {
   lines             Int
   /// İlçedeki tüm duraklarda hafta içi bir gündeki toplam kalkış
   weekdayDepartures Int
-  /// Ortalama bir durağa hafta içi günde uğrayan otobüs sayısı - ilçe
-  /// büyüklüğünden bağımsız sıklık göstergesi
+  /// Ortalama bir durağa hafta içi günde yapılan sefer sayısı (araç sayısı
+  /// değil - aynı otobüs gün içinde defalarca geçer). İlçe büyüklüğünden
+  /// bağımsız olduğu için ilçeler arası karşılaştırılabilir.
   departuresPerStop Float
   method            SourceMethod
   source            String

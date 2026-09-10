@@ -5,7 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { AffordabilityRow } from "@/lib/aggregate";
 import { METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
-import { formatKm, formatTRY } from "@/lib/format";
+import { formatDepartures, formatKm, formatTRY } from "@/lib/format";
 
 /** Sequential mavi rampa (açık = düşük, koyu = yüksek). */
 const RAMP = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"];
@@ -22,7 +22,7 @@ function metricValue(row: AffordabilityRow, metric: MapMetric): number | null {
 /** Ölçek etiketi metriğe göre değişir: kira ₺, uzaklık km. */
 function formatMetric(value: number, metric: MapMetric): string {
   if (metric === "transit") return formatKm(value);
-  if (metric === "bus") return `${value}/gün`;
+  if (metric === "bus") return `${formatDepartures(value)} sefer/gün`;
   return formatTRY(value);
 }
 
@@ -46,7 +46,7 @@ function popupHtml(row: AffordabilityRow): string {
      }</b></div>
      ${
        row.bus
-         ? `<div>Otobüs: <b>${row.bus.departuresPerStop}/gün</b> (durak başına)</div>`
+         ? `<div>Otobüs: <b>${formatDepartures(row.bus.departuresPerStop)} sefer/gün</b> (durak başına)</div>`
          : ""
      }
      ${

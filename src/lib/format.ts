@@ -24,3 +24,8 @@ export function formatPct(value: number, digits = 1): string {
 export function formatKm(value: number): string {
   return `${tlPrecise.format(value)} km`;
 }
+
+/** Sefer sıklığı bir ortalamadır; küsurat yanıltıcı bir kesinlik hissi verir. */
+export function formatDepartures(value: number): string {
+  return tl.format(Math.round(value));
+}
