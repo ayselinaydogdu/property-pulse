@@ -67,8 +67,8 @@
 body {
   background: var(--page);
   color: var(--text-primary);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
   /* Retina ekranda yazıyı inceltip keskinleştirir */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -84,7 +84,8 @@ h2,
 h3 {
   /* Başlıklarda satır aralığı gövdeden dar olmalı, yoksa dağınık görünür */
   line-height: 1.25;
-  letter-spacing: -0.011em;
+  /* Inter büyük puntoda ferah durur; hafif sıkıştırmak toparlıyor */
+  letter-spacing: -0.018em;
 }
 
 /* Sayı sütunları hizalansın; sıfırın çizgili biçimi karışıklığı önler */
