@@ -120,7 +120,7 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Gerçek ilçe m² kira verisi, kaynağı ve tarihiyle
 - [x] Aggregasyon API'si + gelire göre karşılaştırma
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
-- [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
+- [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", "+ eksik kalem", veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
 - [x] **Birim testler** (45 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman

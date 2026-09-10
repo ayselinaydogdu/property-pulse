@@ -216,3 +216,26 @@ h3 {
 :root[data-theme="dark"] .pp-card {
   box-shadow: none;
 }
+
+/* İlçe kartları: tıklanabilir olduklarını hissettiren hafif bir tepki */
+.pp-district-card {
+  transition:
+    border-color 0.12s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.pp-district-card:hover {
+  border-color: var(--series-rent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-district-card {
+    transition: none;
+  }
+  .pp-district-card:hover {
+    transform: none;
+  }
+}

@@ -396,94 +396,107 @@ export default function Dashboard({
 
       <Card
         className="mb-6"
-        title="Semt karşılaştırma tablosu"
-          subtitle={`${rows.length} ilçe, ucuzdan pahalıya. Detay için bir satıra tıkla.`}
-        >
-          <div className="max-h-[560px] overflow-auto">
-            <table className="pp-table">
-              <thead>
-                <tr>
-                  <th className="text-left">Semt</th>
-                  <th className="text-right">Kira</th>
-                  <th className="text-right">Hızlı ulaşım</th>
-                  <th className="text-right">Yaşam maliyeti</th>
-                  <th className="text-right">Gelirin payı</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr
-                    key={row.slug}
-                    onClick={() => setSelectedSlug((cur) => (cur === row.slug ? null : row.slug))}
-                    aria-selected={selectedSlug === row.slug}
-                  >
-                    <td className="font-medium">{row.name}</td>
-                    <td className="tabular text-right">
+        title="İlçeler"
+        subtitle={`${rows.length} ilçe, ucuzdan pahalıya. Detay için bir karta tıkla.`}
+      >
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {rows.map((row) => {
+            const selected = selectedSlug === row.slug;
+            const hasTransit = (row.transit?.existingStations ?? 0) > 0;
+            // Gelir payı çubuğu: %100'ü aşan durumlarda çubuk taşmasın
+            const burden = Math.min(100, row.knownBurdenPct ?? 0);
+
+            return (
+              <li key={row.slug}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedSlug((cur) => (cur === row.slug ? null : row.slug))
+                  }
+                  aria-pressed={selected}
+                  className="pp-district-card w-full rounded-xl border p-3.5 text-left"
+                  style={{
+                    background: "var(--surface-1)",
+                    borderColor: selected ? "var(--series-rent)" : "var(--border)",
+                  }}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-semibold">{row.name}</span>
+                    <span className="tabular font-semibold">
                       {row.estimatedRent !== null ? (
                         formatTRY(row.estimatedRent)
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
-                    </td>
-                    <td className="tabular text-right">
-                      {row.transit ? (
-                        row.transit.existingStations > 0 ? (
-                          <>
-                            {row.transit.existingStations} istasyon
-                            <span className="ml-1.5" style={{ color: "var(--text-muted)" }}>
-                              {formatKm(row.transit.nearestStationKm ?? 0)}
-                            </span>
-                          </>
-                        ) : (
-                          <span
-                            className="font-semibold"
-                            style={{ color: "var(--status-critical)" }}
-                          >
-                            yok
-                            <span className="ml-1.5">
-                              en yakın {formatKm(row.transit.nearestStationKm ?? 0)}
-                            </span>
+                    </span>
+                  </div>
+
+                  {/* Gelirin ne kadarını götürdüğü - sayıdan önce göz çubuğu yakalar */}
+                  {row.knownBurdenPct !== null && (
+                    <div className="mt-2.5">
+                      <div
+                        className="h-1.5 w-full overflow-hidden rounded-full"
+                        style={{ background: "var(--grid)" }}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${burden}%`,
+                            background:
+                              burden >= 50 ? "var(--status-critical)" : "var(--series-rent)",
+                          }}
+                        />
+                      </div>
+                      <div
+                        className="mt-1 flex items-center justify-between"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        <span>gelirinin {formatPct(row.knownBurdenPct, 0)}&apos;i</span>
+                        {row.missing.length > 0 && (
+                          <span title={`${row.missing.join(", ")} verisi eksik`}>
+                            + eksik kalem
                           </span>
-                        )
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>veri yok</span>
-                      )}
-                    </td>
-                    <td className="tabular text-right">
-                      {row.estimatedCost !== null ? (
-                        formatTRY(row.estimatedCost)
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>veri yok</span>
-                      )}
-                    </td>
-                    <td className="tabular text-right">
-                      {row.knownBurdenPct !== null ? (
-                        <>
-                          {formatPct(row.knownBurdenPct, 0)}
-                          {row.missing.length > 0 && (
-                            <span
-                              className="ml-1"
-                              title={`${row.missing.join(", ")} verisi eksik - gerçek oran daha yüksek`}
-                              style={{ color: "var(--text-muted)" }}
-                            >
-                              +
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>
-            <b>+</b> işareti: bu ilçede eksik gider kalemi var, gerçek oran gösterilenden
-            yüksek. Bu yüzden hiçbir semt için &quot;bütçene uygun&quot; hükmü verilmiyor.
-          </p>
-        </Card>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <span
+                      className="rounded-md px-2 py-0.5"
+                      style={{
+                        background: hasTransit ? "var(--grid)" : "transparent",
+                        border: hasTransit ? "none" : "1px solid var(--status-critical)",
+                        color: hasTransit
+                          ? "var(--text-secondary)"
+                          : "var(--status-critical)",
+                        fontWeight: hasTransit ? 400 : 600,
+                      }}
+                    >
+                      {hasTransit
+                        ? `${row.transit!.existingStations} istasyon · ${row.transit!.lines.slice(0, 3).join(" ")}`
+                        : `hızlı ulaşım yok · ${formatKm(row.transit?.nearestStationKm ?? 0)}`}
+                    </span>
+                    {row.bus && (
+                      <span
+                        className="rounded-md px-2 py-0.5"
+                        style={{ background: "var(--grid)", color: "var(--text-secondary)" }}
+                      >
+                        otobüs {formatDepartures(row.bus.departuresPerStop)}/gün
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-3" style={{ color: "var(--text-muted)" }}>
+          Çubuk, kiranın gelirinin ne kadarını götürdüğünü gösterir. <b>+ eksik kalem</b>{" "}
+          işaretli ilçelerde gider verisi eksik, gerçek oran gösterilenden yüksek - bu
+          yüzden hiçbir ilçe için &quot;bütçene uygun&quot; hükmü verilmiyor.
+        </p>
+      </Card>
 
       {/* Sağdan açılan detay paneli - satıra, haritaya ya da çubuğa tıklayınca */}
       {selected && (
