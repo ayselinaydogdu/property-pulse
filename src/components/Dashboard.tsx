@@ -202,6 +202,8 @@ export default function Dashboard({
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   // İş yeri istasyonu: seçilince her ilçe için güzergâh hesaplanır
   const [stations, setStations] = useState<{ name: string; lines: string[] }[]>([]);
+  const [workDistricts, setWorkDistricts] = useState<{ name: string; nearestStation: string }[]>([]);
+  const [resolvedStation, setResolvedStation] = useState<string | null>(null);
   const [workStation, setWorkStation] = useState("");
   const [commute, setCommute] = useState<Record<string, CommuteInfo>>({});
   const [commuteError, setCommuteError] = useState<string | null>(null);
@@ -249,15 +251,22 @@ export default function Dashboard({
   useEffect(() => {
     fetch("/api/commute")
       .then((r) => r.json())
-      .then((d) => setStations(d.stations ?? []))
+      .then((d) => {
+        setStations(d.stations ?? []);
+        setWorkDistricts(d.districts ?? []);
+      })
       .catch(() => setStations([]));
   }, []);
 
   useEffect(() => {
-    const known = stations.some((s) => s.name === workStation);
+    // İstasyon adı da ilçe adı da kabul ediliyor
+    const known =
+      stations.some((s) => s.name === workStation) ||
+      workDistricts.some((d) => d.name === workStation);
     if (!workStation || !known) {
       setCommute({});
       setCommuteError(null);
+      setResolvedStation(null);
       return;
     }
     const controller = new AbortController();
@@ -270,6 +279,7 @@ export default function Dashboard({
           return;
         }
         setCommuteError(null);
+        setResolvedStation(d.resolvedFrom?.station ?? null);
         setCommute(
           Object.fromEntries(
             (d.neighborhoods ?? []).map((n: { slug: string } & CommuteInfo) => [
@@ -283,7 +293,7 @@ export default function Dashboard({
         if ((err as Error).name !== "AbortError") setCommuteError("Güzergâh hesaplanamadı");
       });
     return () => controller.abort();
-  }, [workStation, stations]);
+  }, [workStation, stations, workDistricts]);
 
   useEffect(() => {
     fetch("/api/contributions")
@@ -330,8 +340,8 @@ export default function Dashboard({
       >
         <p className="mb-3 text-sm" style={{ color: "var(--text-secondary)" }}>
           Gelirini ve aradığın daire büyüklüğünü gir; her ilçede ne kadar kira
-          ödeyeceğini hesaplayalım. İş yerine yakın istasyonu da eklersen her ilçeden
-          işe kaç durak olduğunu görürsün.
+          ödeyeceğini hesaplayalım. İş yerinin semtini ya da yakınındaki istasyonu
+          eklersen her ilçeden işe kaç durak olduğunu görürsün.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NumberField
@@ -353,12 +363,12 @@ export default function Dashboard({
             onChange={(v) => setInput((s) => ({ ...s, areaM2: Math.max(1, v) }))}
           />
           <label className="flex flex-col gap-1.5">
-            <span className="font-medium">İşin hangi istasyona yakın?</span>
+            <span className="font-medium">İşin nerede?</span>
             <input
               list="pp-stations"
               value={workStation}
               onChange={(e) => setWorkStation(e.target.value)}
-              placeholder="İsteğe bağlı - ör. Levent"
+              placeholder="İsteğe bağlı - semt ya da istasyon"
               className="w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2"
               style={{
                 background: "var(--page)",
@@ -367,9 +377,14 @@ export default function Dashboard({
               }}
             />
             <datalist id="pp-stations">
+              {workDistricts.map((d) => (
+                <option key={`d-${d.name}`} value={d.name}>
+                  ilçe · en yakın {d.nearestStation}
+                </option>
+              ))}
               {stations.map((st) => (
-                <option key={st.name} value={st.name}>
-                  {st.lines.join(", ")}
+                <option key={`s-${st.name}`} value={st.name}>
+                  istasyon · {st.lines.join(", ")}
                 </option>
               ))}
             </datalist>
@@ -377,8 +392,10 @@ export default function Dashboard({
               {commuteError
                 ? commuteError
                 : Object.keys(commute).length > 0
-                  ? `Her ilçeden ${workStation} istasyonuna kaç durak ve kaç aktarma olduğu kartlarda görünüyor.`
-                  : "Yazmaya başla, istasyonlar listelenir. Girersen her ilçeden işe kaç durak olduğunu hesaplarız."}
+                  ? resolvedStation && resolvedStation !== workStation
+                    ? `${workStation} için en yakın istasyon ${resolvedStation}; yolculuklar oraya göre hesaplandı.`
+                    : `Her ilçeden ${workStation} istasyonuna kaç durak olduğu kartlarda görünüyor.`
+                  : "Semt adı da istasyon adı da yazabilirsin. Bu bilgi kaydedilmez, sadece hesap için kullanılır."}
             </span>
           </label>
         </div>

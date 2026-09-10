@@ -67,6 +67,7 @@ npm test                      # birim testler
 - **Neden dakika yok?** Güzergâh (kaç durak, kaç aktarma, kaç km) tamamen veriden çıkıyor. Dakikaya çevirmek için hız gerekiyor ve raylı sistem hız/sefer süresi verisi bulunamadı. Uydurma bir hız katsayısıyla "47 dakika" yazmak, projenin tüm kurallarını çiğnerdi.
 - **Sıralama nasıl doğrulandı?** Kadıköy → Levent için M4 (Kadıköy→Ayrılık Çeşmesi) → Marmaray (→Yenikapı) → M2 (→Levent) çıkıyor; gerçekte insanların gittiği yol bu. Üsküdar → Levent, Esenler → Levent ve Bağcılar → Kabataş da gerçek güzergâhlarla uyuşuyor. Bu kontroller birim testlere yazıldı.
 - **Aktarma cezası bir modelleme tercihidir, ölçüm değil.** Sırf mesafeyi en aza indiren yol bazen üç aktarmalı saçma güzergâhlar üretiyordu. `TRANSFER_PENALTY_KM = 2` ("bir aktarma yaklaşık 2 km yol kadar zahmetlidir") sadece yol seçimini etkiler; gösterilen km gerçek mesafedir.
+- **Hedef olarak semt de yazılabilir.** İnsanlar iş yerinin hangi istasyona yakın olduğunu bilmeyebilir ama hangi ilçede olduğunu bilir. İlçe adı girilirse o ilçenin en yakın istasyonuna çevrilir ve hangi istasyonun kullanıldığı arayüzde yazılır.
 - **Yolculuk ilçe merkezine en yakın istasyondan başlar**, kullanıcının evinden değil. Bu mesafe 5 km'yi aşınca kart rozeti kırmızıya döner ve "+ 32,5 km istasyona" diye yazar - yoksa "Çatalca'dan işe 11 durak" yanıltıcı olurdu.
 
 ### Araştırma notları (neyin neden olmadığı)
@@ -112,7 +113,7 @@ out center tags;
 | `GET /api/contributions` | Sepet kalemleri ve şimdiye kadar toplanan katkı sayıları |
 | `POST /api/contributions` | Kira ya da fiyat katkısı ekler |
 | `GET /api/commute` | Seçilebilecek istasyonlar |
-| `GET /api/commute?to=Levent` | Her ilçeden o istasyona güzergâh: durak, aktarma, km, bacaklar |
+| `GET /api/commute?to=Levent` | Her ilçeden o istasyona güzergâh: durak, aktarma, km, bacaklar. `to` bir **ilçe adı** da olabilir; o ilçenin en yakın istasyonuna çevrilir |
 | `GET /api/affordability?income=75000&areaM2=90&household=1&maxBurdenPct=60` | Gelire göre uygun semtler, kalan paraya göre sıralı |
 
 Örnek:
