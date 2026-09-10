@@ -329,8 +329,9 @@ export default function Dashboard({
         style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
       >
         <p className="mb-3 text-sm" style={{ color: "var(--text-secondary)" }}>
-          Şu iki bilgiyi gir, her ilçede ne kadar kira ödeyeceğini ve bunun gelirinin
-          ne kadarı olduğunu hesaplayalım.
+          Gelirini ve aradığın daire büyüklüğünü gir; her ilçede ne kadar kira
+          ödeyeceğini hesaplayalım. İş yerine yakın istasyonu da eklersen her ilçeden
+          işe kaç durak olduğunu görürsün.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NumberField
