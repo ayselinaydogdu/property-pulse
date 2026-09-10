@@ -219,6 +219,16 @@ export default function Dashboard({
     };
   }, [input]);
 
+  // Panel açıkken Esc kapatsın
+  useEffect(() => {
+    if (!selectedSlug) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedSlug(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSlug]);
+
   const withRent = rows.filter((r) => r.estimatedRent !== null);
   const cheapest = [...withRent].sort((a, b) => a.estimatedRent! - b.estimatedRent!)[0];
   const priciest = [...withRent].sort((a, b) => b.estimatedRent! - a.estimatedRent!)[0];
@@ -450,96 +460,141 @@ export default function Dashboard({
           </p>
         </Card>
 
+      {/* Sağdan açılan detay paneli - satıra, haritaya ya da çubuğa tıklayınca */}
       {selected && (
-        <Card className="mb-6" title={selected.name}>
-          {selected.rent && (
-            <>
-              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                <div>
-                  <dt style={{ color: "var(--text-muted)" }}>m² birim kira</dt>
-                  <dd className="tabular mt-0.5 font-medium">
-                    {selected.rent.hasSpread
-                      ? `${selected.rent.perM2Min} - ${selected.rent.perM2Max} ₺`
-                      : `${selected.rent.perM2} ₺`}
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ color: "var(--text-muted)" }}>{selected.areaM2} m² için</dt>
-                  <dd className="tabular mt-0.5 font-medium">
-                    {formatTRY(selected.estimatedRent!)}
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ color: "var(--text-muted)" }}>Dayanak</dt>
-                  <dd className="mt-0.5 font-medium">
-                    {selected.rent.basis === "OWN_OBSERVATIONS"
-                      ? `${selected.rent.observationCount} kendi kaydımız`
-                      : "yayınlanmış ortalama"}
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ color: "var(--text-muted)" }}>Eksik veri</dt>
-                  <dd className="mt-0.5 font-medium">
-                    {selected.missing.length > 0 ? selected.missing.join(", ") : "yok"}
-                  </dd>
-                </div>
-              </dl>
-              <p className="mt-2">
-                <SourceNote sources={selected.rent.sources} />
-              </p>
-            </>
-          )}
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            style={{ background: "rgba(0,0,0,0.4)" }}
+            onClick={() => setSelectedSlug(null)}
+            aria-hidden
+          />
+          <aside
+            role="dialog"
+            aria-label={`${selected.name} detayı`}
+            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col overflow-y-auto border-l p-5 text-sm"
+            style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
+          >
+            <header className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">{selected.name}</h2>
+                <p style={{ color: "var(--text-muted)" }}>{selected.city}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSlug(null)}
+                aria-label="Paneli kapat"
+                className="rounded-lg border px-2 py-1"
+                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+              >
+                ✕
+              </button>
+            </header>
 
-          {selected.transit && (
-            <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-              <h3 className="font-semibold">
-                Hızlı ulaşım
-                {selected.transit.existingStations > 0 && (
-                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
-                    {selected.transit.existingStations} istasyon ·{" "}
-                    {selected.transit.lines.length} hat
-                  </span>
-                )}
-              </h3>
-
-              {selected.transit.stations.length > 0 ? (
-                <ul className="mt-3 space-y-3">
-                  {groupByLine(selected.transit.stations).map(([line, stations]) => (
-                    <li key={line} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <span
-                        className="rounded px-1.5 py-0.5 font-semibold"
-                        style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
-                      >
-                        {line}
-                      </span>
-                      <span style={{ color: "var(--text-muted)" }}>
-                        {stripLineCode(stations[0].lineName, line)}
-                      </span>
-                      <span className="tabular basis-full" style={{ color: "var(--text-secondary)" }}>
-                        {stations.map((st) => `${st.name} (${formatKm(st.km)})`).join(" · ")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
-                  Bu ilçede hızlı ulaşım istasyonu yok. En yakını başka bir ilçede:{" "}
-                  <b>
-                    {selected.transit.nearestStationName} ({selected.transit.nearestStationLine})
-                  </b>{" "}
-                  · {formatKm(selected.transit.nearestStationKm ?? 0)}
+            {selected.rent && (
+              <section>
+                <h3 className="font-semibold">Kira</h3>
+                <dl className="mt-2 space-y-1.5">
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>m² birim kira</dt>
+                    <dd className="tabular font-medium">
+                      {selected.rent.hasSpread
+                        ? `${selected.rent.perM2Min} - ${selected.rent.perM2Max} ₺`
+                        : `${selected.rent.perM2} ₺`}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>{selected.areaM2} m² için</dt>
+                    <dd className="tabular font-medium">{formatTRY(selected.estimatedRent!)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>Gelirinin payı</dt>
+                    <dd className="tabular font-medium">
+                      {selected.knownBurdenPct !== null
+                        ? formatPct(selected.knownBurdenPct, 0)
+                        : "—"}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-2">
+                  <SourceNote sources={selected.rent.sources} />
                 </p>
-              )}
+              </section>
+            )}
 
-              <p className="mt-3">
-                <SourceNote sources={[selected.transit.provenance]} />
+            {selected.transit && (
+              <section className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <h3 className="font-semibold">
+                  Hızlı ulaşım
+                  {selected.transit.existingStations > 0 && (
+                    <span
+                      className="ml-2 font-normal"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {selected.transit.existingStations} istasyon ·{" "}
+                      {selected.transit.lines.length} hat
+                    </span>
+                  )}
+                </h3>
+
+                {selected.transit.stations.length > 0 ? (
+                  <ul className="mt-3 space-y-3">
+                    {groupByLine(selected.transit.stations).map(([line, stations]) => (
+                      <li key={line}>
+                        <div className="flex flex-wrap items-baseline gap-x-2">
+                          <span
+                            className="rounded px-1.5 py-0.5 font-semibold"
+                            style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
+                          >
+                            {line}
+                          </span>
+                          <span style={{ color: "var(--text-muted)" }}>
+                            {stripLineCode(stations[0].lineName, line)}
+                          </span>
+                        </div>
+                        <p className="mt-1" style={{ color: "var(--text-secondary)" }}>
+                          {stations.map((st) => st.name).join(" · ")}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
+                    Bu ilçede hızlı ulaşım istasyonu yok.
+                  </p>
+                )}
+
+                {selected.transit.nearestStationName && (
+                  <p
+                    className="mt-3 rounded-lg p-2.5"
+                    style={{ background: "var(--page)", color: "var(--text-secondary)" }}
+                  >
+                    İlçe merkezine en yakın istasyon:{" "}
+                    <b>
+                      {selected.transit.nearestStationName} (
+                      {selected.transit.nearestStationLine})
+                    </b>
+                    , kuş uçuşu {formatKm(selected.transit.nearestStationKm ?? 0)}.
+                    <span className="block" style={{ color: "var(--text-muted)" }}>
+                      Yürüme mesafesi değildir; evin ilçenin neresinde olduğuna göre
+                      değişir.
+                    </span>
+                  </p>
+                )}
+
+                <p className="mt-3">
+                  <SourceNote sources={[selected.transit.provenance]} />
+                </p>
+              </section>
+            )}
+
+            {selected.missing.length > 0 && (
+              <p className="mt-5" style={{ color: "var(--text-muted)" }}>
+                Eksik veri: {selected.missing.join(", ")}
               </p>
-              <p className="mt-1" style={{ color: "var(--text-muted)" }}>
-                Uzaklıklar ilçe merkezinden kuş uçuşudur - yürüme mesafesi değildir.
-              </p>
-            </div>
-          )}
-        </Card>
+            )}
+          </aside>
+        </>
       )}
 
       <Card
