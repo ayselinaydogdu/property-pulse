@@ -17,7 +17,7 @@ Amaç, sadece "ilginç bir veri görselleştirmesi" değil; taşınma/yerleşim 
 ```bash
 npm install
 cp .env.example .env          # DATABASE_URL'i kendi Postgres'ine göre düzenle
-npm run db:push               # şemayı veritabanına uygula
+npm run db:deploy             # şemayı veritabanına uygula (migration'ları çalıştırır)
 npm run db:seed               # data/ altındaki veriyi yükle
 npm run dev                   # http://localhost:3000
 npm test                      # birim testler
@@ -78,6 +78,15 @@ npm test                      # birim testler
 - **İBB Açık Veri**'de ilçe bazlı tek konut verisi "İlçelere Göre Konut Satış Adedi" ve son güncellemesi 2024; fiyat içermiyor.
 - **Market fiyatları semte göre anlamlı değişmiyor** (zincir marketler ülke geneli fiyatlıyor). Bu yüzden şehir geneli bir fiyatı ilçelere dağıtıp farklıymış gibi göstermek yerine şema `GeoScope.CITY` ile bunu işaretliyor.
 
+### Veritabanı komutları
+
+| Komut | Ne yapar |
+|---|---|
+| `npm run db:deploy` | Bekleyen migration'ları uygular (kurulum ve canlı için) |
+| `npm run db:migrate` | Şema değişince yeni migration üretir (geliştirme) |
+| `npm run db:seed` | `data/` altındaki dosyaları yükler (idempotent) |
+| `npm run db:reset` | Veritabanını sıfırlayıp baştan kurar ve yükler |
+
 ### Veriyi güncelleme
 
 `data/rent-benchmarks.json` içindeki kaynak sayfayı aç, değerleri ve `retrievedAt`'i güncelle, `npm run db:seed` çalıştır. Upsert olduğu için tekrar çalıştırmak güvenli.
@@ -134,9 +143,10 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", "+ eksik kalem", veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
-- [x] **Birim testler** (45 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
+- [x] **Birim testler** (59 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
+- [x] **Versiyonlu migration** - `prisma/migrations/` altında; şema değişikliği artık tabloları boşaltmayı gerektirmiyor
 - [x] **Kira + işe yakınlık ödünleşimi** - iş yeri girilince liste işe yakınlığa göre sıralanıyor ve baskılanmamış ilçeler yıldızlanıyor
 - [x] **İşe gidiş güzergâhı** - kullanıcı iş yerine yakın istasyonu girer, her ilçeden kaç durak / kaç aktarma / kaç km olduğu hesaplanır. Dijkstra, 314 istasyonluk ağ üzerinde. Kadıköy → Levent için M4 → Marmaray → M2 çıkarıyor, gerçek güzergâhla aynı
 - [x] **Kullanıcı katkı sistemi** - ilçe panelinden kendi kiranı ve gündelik fiyatları girme. Açık kaynağı olmayan iki veriyi doldurmanın tek yolu. Kira katkıları 20 kaydı geçince ilçenin ortalaması yayınlanmış çapa yerine kendi kayıtlarımızın medyanından hesaplanmaya başlar (IQR filtresi devreye girer)
@@ -146,7 +156,6 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 ### Sıradaki
 - [ ] **Yolculuk süresi (dakika)** - güzergâh hesabı çalışıyor ama süre yok: raylı sistem hız verisi bulunamadı. Hat uzunluğu + uçtan uca sefer süresi yayınlanmış bir kaynak bulunursa eklenebilir.
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
-- [ ] `db push` yerine versiyonlu `prisma migrate`
 - [ ] Vercel'e deploy
 
 ## Teknoloji Yığını
