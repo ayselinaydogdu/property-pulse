@@ -38,7 +38,7 @@ npm test                      # birim testler
 | Metrobüs istasyonları | **Bağlı** - 46 istasyon | [İBB Açık Veri - IETT GTFS](https://data.ibb.gov.tr/dataset/iett-gtfs-verisi), 21.04.2026 |
 | Otobüs hizmet yoğunluğu | **Bağlı** - 39 ilçe | Aynı GTFS'ten hesaplandı (`scripts/build_bus_service.py`) |
 | Kira endeksi (İstanbul geneli) | **Bağlı** - 34 çeyrek, 2018-Q1 → 2026-Q2 | TCMB EVDS, `TP.BK.ISTANBUL` (`scripts/fetch_evds_rent_index.py`) |
-| Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
+| Günlük harcamalar (kahve, market, hizmet) | **Toplanıyor** | Açık kaynağı yok; kullanıcı katkısıyla toplanıyor (`POST /api/contributions`) |
 | İşe gidiş süresi (kapı-kapı) | **Yok** | İstasyon konumları bağlandı, süre hesabı için rota motoru gerekiyor |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
 
@@ -83,6 +83,7 @@ out center tags;
 
 ## Mimarideki ana kararlar
 
+- **Sepetin tanımı varsayım, fiyatları veri.** `data/cost-basket-definition.json` sadece "sepette ne var" der; `monthlyQty` (ayda kaç kahve) ölçülmüş bir değer değil, açıkça belirtilen bir varsayımdır. Fiyatlar kullanıcı katkısından gelir.
 - **Kaynaksız sayı giremez.** Her fiyat kaydında `source`, `sourceUrl`, `observedAt`, `method` zorunlu. Uydurma veriyi disiplinle değil, şema kısıtıyla engelliyoruz.
 - **Bilinmeyen `null` döner, sıfır sayılmaz.** Verisi olmayan kalem toplama dahil edilmez; arayüz "veri yok" gösterir ve eksik kalem varsa oranın yanına `+` koyar. Eksik veri varken hiçbir semt için "bütçene uygun" hükmü verilmez (`affordable: null`).
 - **Olmayan kırılım uydurulmaz.** `GeoScope` alanı, şehir geneli bir fiyatın ilçelere dağıtılıp farklıymış gibi gösterilmesini engeller.
@@ -100,6 +101,8 @@ out center tags;
 | `GET /api/neighborhoods` | Tüm semtler: medyan kira, m² fiyatı, brüt getiri, sepet tutarı, maliyet endeksi |
 | `GET /api/neighborhoods/[slug]` | Tek semtin detayı + sepet kırılımı |
 | `GET /api/cost-index` | Sadece yaşam maliyeti endeksi (harita katmanı için) |
+| `GET /api/contributions` | Sepet kalemleri ve şimdiye kadar toplanan katkı sayıları |
+| `POST /api/contributions` | Kira ya da fiyat katkısı ekler |
 | `GET /api/affordability?income=75000&areaM2=90&household=1&maxBurdenPct=60` | Gelire göre uygun semtler, kalan paraya göre sıralı |
 
 Örnek:
@@ -119,16 +122,16 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
-- [x] **Birim testler** (34 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
+- [x] **Birim testler** (45 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
+- [x] **Kullanıcı katkı sistemi** - ilçe panelinden kendi kiranı ve gündelik fiyatları girme. Açık kaynağı olmayan iki veriyi doldurmanın tek yolu. Kira katkıları 20 kaydı geçince ilçenin ortalaması yayınlanmış çapa yerine kendi kayıtlarımızın medyanından hesaplanmaya başlar (IQR filtresi devreye girer)
 - [x] **TCMB kira endeksi** - İstanbul geneli birim kira serisi; bağımsız çapraz kontrol olarak gösteriliyor ve çapalar bayatladığında oranlayarak güncelleyecek
 - [x] **İlçe detay paneli** - satıra/haritaya/çubuğa tıklayınca sağdan açılır; kira özeti ve hızlı ulaşım hat hat: hattın kodu, türü (metro/tramvay/banliyö/metrobüs), adı, o ilçedeki istasyonları ve hattın İstanbul genelindeki toplam istasyon sayısı
 
 ### Sıradaki
 - [ ] **Kapı-kapı yolculuk süresi** - kullanıcı iş konumunu girsin, her ilçeden süre hesaplansın. İstasyon konumları hazır; rota motoru (OpenTripPlanner vb.) gerekiyor. Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
-- [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
 - [ ] `db push` yerine versiyonlu `prisma migrate`
 - [ ] Vercel'e deploy
 

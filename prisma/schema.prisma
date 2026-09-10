@@ -136,7 +136,8 @@ model PriceEntry {
   priceKurus     Int
   method         SourceMethod
   source         String
-  sourceUrl      String
+  /// Kullanıcı katkılarında yoktur - yayınlanmış kaynaklarda zorunludur
+  sourceUrl      String?
   observedAt     DateTime
 
   item         CostOfLivingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)

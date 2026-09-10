@@ -47,6 +47,17 @@ type StationFile = {
   }[];
 };
 
+type BasketDefinitionFile = {
+  items: {
+    slug: string;
+    name: string;
+    category: string;
+    unit: string;
+    monthlyQty: number;
+    scope: "CITY" | "DISTRICT";
+  }[];
+};
+
 type RentIndexFile = {
   _meta: {
     series: string;
@@ -180,6 +191,18 @@ async function main() {
       `(${existing} mevcut, ${stationRows.length - existing} inşaat halinde` +
       `${unmatched > 0 ? `, ${unmatched} tanesi hiçbir ilçe sınırına düşmedi` : ""})`,
   );
+
+  // --- Yaşam maliyeti sepetinin TANIMI (fiyat değil) ---
+  // Fiyatlar kullanıcı katkısıyla gelecek; burada sadece "sepette ne var" duruyor.
+  const basket = readJson<BasketDefinitionFile>("data", "cost-basket-definition.json");
+  for (const item of basket.items) {
+    await prisma.costOfLivingItem.upsert({
+      where: { slug: item.slug },
+      update: item,
+      create: item,
+    });
+  }
+  console.log(`${basket.items.length} sepet kalemi tanımlandı (fiyatsız)`);
 
   // --- TCMB kira endeksi (İstanbul geneli) ---
   const indexFile = readJson<RentIndexFile>("data", "rent-index.json");

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { AffordabilityRow, DistrictStation, Provenance } from "@/lib/aggregate";
 import { RentChart } from "@/components/Charts";
 import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
+import ContributionForm from "@/components/ContributionForm";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDepartures, formatKm, formatPct, formatTRY } from "@/lib/format";
 
@@ -681,6 +682,12 @@ export default function Dashboard({
               </section>
             )}
 
+            <ContributionForm
+              neighborhoodSlug={selected.slug}
+              neighborhoodName={selected.name}
+              ownRentContributions={selected.rent?.observationCount ?? 0}
+            />
+
             {selected.missing.length > 0 && (
               <p className="mt-5" style={{ color: "var(--text-muted)" }}>
                 Eksik veri: {selected.missing.join(", ")}
@@ -779,7 +786,7 @@ export default function Dashboard({
             {[
               {
                 name: "Günlük harcamalar (kahve, market, hizmet)",
-                note: "İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak.",
+                note: "İlçe kırılımında yayınlanmış veri yok. Toplama başladı: bir ilçe seç, panelden kendi fiyatlarını gir.",
               },
               {
                 name: "İşe gidiş süresi",

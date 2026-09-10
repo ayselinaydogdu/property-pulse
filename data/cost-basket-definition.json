@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "description": "Yaşam maliyeti sepetinin TANIMI - fiyat İÇERMEZ. Fiyatlar kullanıcı katkısıyla toplanır.",
+    "important": "monthlyQty (aylık tüketim adedi) ölçülmüş bir veri değil, açıkça belirtilen bir VARSAYIMDIR. Arayüzde bu şekilde işaretlenir ve kullanıcı kendi tüketimine göre değiştirebilir.",
+    "scopeNote": "scope=CITY olan kalemler ilçeye göre değişmez (zincir marketler ülke geneli fiyatlar), tek fiyat tüm ilçelerde geçerlidir. scope=DISTRICT olanlar ilçeden ilçeye gerçekten değişir."
+  },
+  "items": [
+    { "slug": "coffee", "name": "Kahve (orta boy)", "category": "kafe", "unit": "adet", "monthlyQty": 12, "scope": "DISTRICT" },
+    { "slug": "restaurant-meal", "name": "Restoranda bir öğün", "category": "kafe", "unit": "öğün", "monthlyQty": 6, "scope": "DISTRICT" },
+    { "slug": "haircut", "name": "Kuaför (saç kesimi)", "category": "hizmet", "unit": "adet", "monthlyQty": 1, "scope": "DISTRICT" },
+    { "slug": "gym-monthly", "name": "Spor salonu aylık üyelik", "category": "hizmet", "unit": "ay", "monthlyQty": 1, "scope": "DISTRICT" },
+    { "slug": "water-19l", "name": "Damacana su (19 lt)", "category": "market", "unit": "adet", "monthlyQty": 4, "scope": "DISTRICT" },
+    { "slug": "market-basket", "name": "Haftalık market alışverişi", "category": "market", "unit": "sepet", "monthlyQty": 4, "scope": "CITY" },
+    { "slug": "transit-monthly", "name": "Toplu taşıma aylık abonman", "category": "ulasim", "unit": "ay", "monthlyQty": 1, "scope": "CITY" }
+  ]
+}
