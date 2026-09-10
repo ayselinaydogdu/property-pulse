@@ -20,6 +20,7 @@ cp .env.example .env          # DATABASE_URL'i kendi Postgres'ine göre düzenle
 npm run db:push               # şemayı veritabanına uygula
 npm run db:seed               # data/ altındaki veriyi yükle
 npm run dev                   # http://localhost:3000
+npm test                      # birim testler
 ```
 
 Örnek ilan verisini yeniden üretmek için: `npx tsx scripts/generate-listings.ts`
@@ -110,6 +111,7 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
+- [x] **Birim testler** (30 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
 - [x] **İlçe detay paneli** - satıra/haritaya/çubuğa tıklayınca sağdan açılır; kira özeti ve hızlı ulaşım hat hat: hattın kodu, türü (metro/tramvay/banliyö/metrobüs), adı, o ilçedeki istasyonları ve hattın İstanbul genelindeki toplam istasyon sayısı
@@ -119,7 +121,6 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [ ] TCMB EVDS bağlantısı - elle girilen kira çapalarını endeksle güncel tutmak (`method: DERIVED`)
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
 - [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
-- [ ] Aggregasyon fonksiyonları için birim testleri
 - [ ] `db push` yerine versiyonlu `prisma migrate`
 - [ ] Vercel'e deploy
 
@@ -145,7 +146,8 @@ prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi
 src/lib/aggregate.ts      Semt göstergeleri + bütçe uygunluğu hesabı
-src/lib/geo.ts            Kuş uçuşu mesafe (haversine)
+src/lib/geo.ts            Kuş uçuşu mesafe (haversine) + nokta-poligon testi
+src/lib/*.test.ts         Birim testler
 src/app/api/              REST endpoint'leri
 src/components/           Dashboard, harita, grafikler
 ```

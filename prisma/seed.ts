@@ -6,6 +6,7 @@
  */
 import { PrismaClient, type SourceMethod, type StationStage } from "@prisma/client";
 import { readFileSync } from "node:fs";
+import { pointInRing } from "../src/lib/geo";
 import { join } from "node:path";
 
 const prisma = new PrismaClient();
@@ -66,22 +67,6 @@ type BenchmarkFile = {
     benchmarks: { neighborhoodSlug: string; rentPerM2: number; sampleSize?: number }[];
   }[];
 };
-
-/**
- * Işın atma (ray casting) ile nokta-poligon testi.
- * Bir istasyonun hangi ilçeye düştüğünü bulmak için kullanılıyor.
- */
-function pointInRing(lng: number, lat: number, ring: number[][]): boolean {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i];
-    const [xj, yj] = ring[j];
-    const intersects =
-      yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
-    if (intersects) inside = !inside;
-  }
-  return inside;
-}
 
 async function main() {
   const { neighborhoods } = readJson<NeighborhoodFile>("data", "neighborhoods.json");
