@@ -221,6 +221,23 @@ src/components/           Dashboard, harita, grafikler
 - [ ] **Yolculuk süresi (dakika)** - güzergâh hesabı çalışıyor ama süre yok: raylı sistem hız verisi bulunamadı. Hat uzunluğu + uçtan uca sefer süresi yayınlanmış bir kaynak bulunursa eklenebilir.
 - [ ] Vercel'e deploy
 
+## Canlıya alma (Vercel)
+
+Uygulama yönetilen bir PostgreSQL gerektiriyor; lokal veritabanı canlıya çıkamaz.
+
+1. **Veritabanı**: [Neon](https://neon.tech) üzerinde ücretsiz bir proje aç, bağlantı dizesini kopyala
+2. **Şema ve veri** (yerelden, bir kez):
+   ```bash
+   DATABASE_URL="<neon-bağlantı-dizesi>" npm run db:deploy
+   DATABASE_URL="<neon-bağlantı-dizesi>" npm run db:seed
+   ```
+3. **Vercel**: depoyu içe aktar, ortam değişkeni olarak `DATABASE_URL` ekle
+4. Deploy
+
+`EVDS_API_KEY` canlıda gerekmez - kira endeksi verisi `data/rent-index.json` içinde hazır; sadece güncelleme script'i kullanır.
+
+**Not:** `data/` altındaki JSON dosyaları derlemeye gömülür (çalışma anında diskten okuma sunucusuz ortamda güvenilir değildir).
+
 ## Kapsam notu
 
 Proje başlangıçta "semt bazlı tam yaşam maliyeti haritası" olarak tasarlanmıştı. Araştırma sonucunda ilçe kırılımında günlük harcama verisinin (kahve, market, hizmet) hiçbir açık kaynakta bulunmadığı görüldü. Uydurma veriyle geniş kapsam göstermek yerine kapsam daraltıldı: sadece gerçek veriyle desteklenebilen kısım yapılıyor. Eksik olanlar arayüzde ve bu dosyada açıkça listeleniyor.
