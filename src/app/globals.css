@@ -67,12 +67,36 @@
 body {
   background: var(--page);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  /* Retina ekranda yazıyı inceltip keskinleştirir */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.5;
+  /* Türkçe metinde okunurluğu artıran harf birleşimleri */
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
 }
 
-/* Sayı sütunları hizalansın diye tablolarda ve eksenlerde tabular figürler */
+h1,
+h2,
+h3 {
+  /* Başlıklarda satır aralığı gövdeden dar olmalı, yoksa dağınık görünür */
+  line-height: 1.25;
+  letter-spacing: -0.011em;
+}
+
+/* Sayı sütunları hizalansın; sıfırın çizgili biçimi karışıklığı önler */
 .tabular {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* Klavyeyle gezenler için görünür odak halkası - fareyle tıklayınca çıkmaz */
+:where(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--series-rent);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* Leaflet karo katmanı dark modda göz almasın */
@@ -131,4 +155,64 @@ body {
 .pp-bar-stacked .recharts-rectangle {
   stroke: var(--surface-1);
   stroke-width: 2;
+}
+
+/*
+ * Tablo biçimi. 39 satırlık uzun bir liste okunurken göz kaymasın diye:
+ * başlık yapışkan, satırlar üzerine gelince vurgulanıyor, sayılar sağa dayalı.
+ */
+.pp-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.pp-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pp-table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--grid);
+}
+
+.pp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pp-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.pp-table tbody tr:hover {
+  background: var(--grid);
+}
+
+.pp-table tbody tr[aria-selected="true"] {
+  background: var(--grid);
+  box-shadow: inset 3px 0 0 var(--series-rent);
+}
+
+/* Kartlara çok hafif bir yükseklik - koyu temada gölge görünmez, kenarlık taşır */
+.pp-card {
+  box-shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pp-card {
+    box-shadow: none;
+  }
+}
+
+:root[data-theme="dark"] .pp-card {
+  box-shadow: none;
 }

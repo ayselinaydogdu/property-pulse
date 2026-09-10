@@ -106,7 +106,7 @@ function Card({
 }) {
   return (
     <section
-      className={`rounded-xl border p-4 ${className}`}
+      className={`pp-card rounded-xl border p-4 ${className}`}
       style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
     >
       {title && (
@@ -400,14 +400,14 @@ export default function Dashboard({
           subtitle={`${rows.length} ilçe, ucuzdan pahalıya. Detay için bir satıra tıkla.`}
         >
           <div className="max-h-[560px] overflow-auto">
-            <table className="w-full text-sm">
+            <table className="pp-table">
               <thead>
-                <tr style={{ color: "var(--text-muted)" }}>
-                  <th className="py-1.5 text-left font-medium">Semt</th>
-                  <th className="py-1.5 text-right font-medium">Kira</th>
-                  <th className="py-1.5 text-right font-medium">Hızlı ulaşım</th>
-                  <th className="py-1.5 text-right font-medium">Yaşam maliyeti</th>
-                  <th className="py-1.5 text-right font-medium">Gelirin payı</th>
+                <tr>
+                  <th className="text-left">Semt</th>
+                  <th className="text-right">Kira</th>
+                  <th className="text-right">Hızlı ulaşım</th>
+                  <th className="text-right">Yaşam maliyeti</th>
+                  <th className="text-right">Gelirin payı</th>
                 </tr>
               </thead>
               <tbody>
@@ -415,21 +415,17 @@ export default function Dashboard({
                   <tr
                     key={row.slug}
                     onClick={() => setSelectedSlug((cur) => (cur === row.slug ? null : row.slug))}
-                    className="cursor-pointer"
-                    style={{
-                      borderTop: "1px solid var(--border)",
-                      background: selectedSlug === row.slug ? "var(--grid)" : undefined,
-                    }}
+                    aria-selected={selectedSlug === row.slug}
                   >
-                    <td className="py-1.5">{row.name}</td>
-                    <td className="tabular py-1.5 text-right">
+                    <td className="font-medium">{row.name}</td>
+                    <td className="tabular text-right">
                       {row.estimatedRent !== null ? (
                         formatTRY(row.estimatedRent)
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
                     </td>
-                    <td className="tabular py-1.5 text-right">
+                    <td className="tabular text-right">
                       {row.transit ? (
                         row.transit.existingStations > 0 ? (
                           <>
@@ -453,14 +449,14 @@ export default function Dashboard({
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
                     </td>
-                    <td className="tabular py-1.5 text-right">
+                    <td className="tabular text-right">
                       {row.estimatedCost !== null ? (
                         formatTRY(row.estimatedCost)
                       ) : (
                         <span style={{ color: "var(--text-muted)" }}>veri yok</span>
                       )}
                     </td>
-                    <td className="tabular py-1.5 text-right">
+                    <td className="tabular text-right">
                       {row.knownBurdenPct !== null ? (
                         <>
                           {formatPct(row.knownBurdenPct, 0)}
