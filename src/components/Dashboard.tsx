@@ -1,11 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AffordabilityRow, DistrictStation, Provenance } from "@/lib/aggregate";
 import { RentChart } from "@/components/Charts";
 import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
 import type { Route } from "@/lib/rail-graph";
+import { paretoOptimal } from "@/lib/tradeoff";
 import ContributionForm from "@/components/ContributionForm";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDepartures, formatKm, formatPct, formatTRY } from "@/lib/format";
@@ -315,6 +316,41 @@ export default function Dashboard({
   const withRent = rows.filter((r) => r.estimatedRent !== null);
   const cheapest = [...withRent].sort((a, b) => a.estimatedRent! - b.estimatedRent!)[0];
   const priciest = [...withRent].sort((a, b) => b.estimatedRent! - a.estimatedRent!)[0];
+  const hasCommute = Object.keys(commute).length > 0;
+
+  /**
+   * İş yeri girildiyse ilçeler hem kiraya hem işe yakınlığa göre değerlendirilir.
+   * "Mantıklı seçenek" = kendisinden hem daha ucuz hem daha yakın bir ilçe yok.
+   */
+  const smartChoices = useMemo(() => {
+    if (!hasCommute) return null;
+    const items = rows
+      .filter((r) => r.estimatedRent !== null && commute[r.slug]?.route)
+      .map((r) => ({
+        slug: r.slug,
+        rent: r.estimatedRent!,
+        stops: commute[r.slug].route!.stops,
+      }));
+    return paretoOptimal(items);
+  }, [rows, commute, hasCommute]);
+
+  /** İş yeri girilince sıralama da işe yakınlığa döner - soru değişmiştir. */
+  const orderedRows = useMemo(() => {
+    if (!hasCommute) return rows;
+    return [...rows].sort((a, b) => {
+      const ra = commute[a.slug]?.route;
+      const rb = commute[b.slug]?.route;
+      if (!ra && !rb) return 0;
+      if (!ra) return 1;
+      if (!rb) return -1;
+      // Önce mantıklı seçenekler, sonra işe yakınlık
+      const sa = smartChoices?.has(a.slug) ? 0 : 1;
+      const sb = smartChoices?.has(b.slug) ? 0 : 1;
+      if (sa !== sb) return sa - sb;
+      return ra.stops - rb.stops;
+    });
+  }, [rows, commute, hasCommute, smartChoices]);
+
   const selected = rows.find((r) => r.slug === selectedSlug) ?? null;
   const selectedCommute = selectedSlug ? commute[selectedSlug] : undefined;
   const hasCostData = rows.some((r) => r.cost !== null);
@@ -495,10 +531,30 @@ export default function Dashboard({
       <Card
         className="mb-6"
         title="İlçeler"
-        subtitle={`${rows.length} ilçe, ucuzdan pahalıya. Detay için bir karta tıkla.`}
+        subtitle={
+          hasCommute
+            ? `${rows.length} ilçe. Önce mantıklı seçenekler, sonra işe yakınlığa göre.`
+            : `${rows.length} ilçe, ucuzdan pahalıya. Detay için bir karta tıkla.`
+        }
       >
+        {hasCommute && smartChoices && (
+          <p
+            className="mb-3 rounded-lg p-2.5"
+            style={{ background: "var(--page)", color: "var(--text-secondary)" }}
+          >
+            <b>{smartChoices.size} ilçe mantıklı seçenek.</b> Geri kalanların her birinde,
+            hem daha ucuz hem işe daha yakın başka bir ilçe var - yani onları seçmek için
+            burada ölçmediğimiz bir sebebin olmalı.
+            <span className="block" style={{ color: "var(--text-muted)" }}>
+              Kirayı ve yakınlığı tek puana indirmiyoruz: &quot;bir durak kaç lira eder&quot;
+              kişiden kişiye değişir, bizim bilebileceğimiz bir şey değil. Karşılaştırma
+              kira ile durak sayısını kullanır; <b>istasyona ulaşma mesafesi dahil
+              değildir</b> - kırmızı rozetli ilçelerde onu ayrıca hesaba kat.
+            </span>
+          </p>
+        )}
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {rows.map((row) => {
+          {orderedRows.map((row) => {
             const selected = selectedSlug === row.slug;
             const hasTransit = (row.transit?.existingStations ?? 0) > 0;
             // Gelir payı çubuğu: %100'ü aşan durumlarda çubuk taşmasın
@@ -519,7 +575,18 @@ export default function Dashboard({
                   }}
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-semibold">{row.name}</span>
+                    <span className="font-semibold">
+                      {row.name}
+                      {smartChoices?.has(row.slug) && (
+                        <span
+                          className="ml-1.5"
+                          title="Mantıklı seçenek: hem daha ucuz hem işe daha yakın bir ilçe yok"
+                          style={{ color: "var(--status-good)" }}
+                        >
+                          ★
+                        </span>
+                      )}
+                    </span>
                     <span className="tabular font-semibold">
                       {row.estimatedRent !== null ? (
                         formatTRY(row.estimatedRent)
