@@ -39,7 +39,8 @@ npm test                      # birim testler
 | Otobüs hizmet yoğunluğu | **Bağlı** - 39 ilçe | Aynı GTFS'ten hesaplandı (`scripts/build_bus_service.py`) |
 | Kira endeksi (İstanbul geneli) | **Bağlı** - 34 çeyrek, 2018-Q1 → 2026-Q2 | TCMB EVDS, `TP.BK.ISTANBUL` (`scripts/fetch_evds_rent_index.py`) |
 | Günlük harcamalar (kahve, market, hizmet) | **Toplanıyor** | Açık kaynağı yok; kullanıcı katkısıyla toplanıyor (`POST /api/contributions`) |
-| İşe gidiş süresi (kapı-kapı) | **Yok** | İstasyon konumları bağlandı, süre hesabı için rota motoru gerekiyor |
+| İşe gidiş güzergâhı | **Bağlı** - 39/39 ilçe | Ağ istasyon verisinden kuruldu (`scripts/build_rail_network.py` + `src/lib/rail-graph.ts`) |
+| İşe gidiş **süresi** (dakika) | **Yok** | Raylı sistem hız/sefer süresi verisi bulunamadı; durak-aktarma-mesafe veriliyor |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
 
 ### Hızlı ulaşım verisi hakkında
@@ -60,6 +61,13 @@ npm test                      # birim testler
 - Konut Fiyat Endeksi yerine **`TP.BK.ISTANBUL` (İstanbul Konut Birim Kiraları)** kullanıldı: fiyat değil doğrudan **kira** ölçüyor, üç aylık ve TL/m² cinsinden mutlak değer veriyor. Kira çapalarını güncellemek için fiyat endeksinden daha uygun.
 - Seri değerleme raporlarına dayanır, ilan veya kiracı beyanına değil - **seviyesi** başka kaynaklardan farklı olabilir (2026-Q2: 442,57 TL/m²). Bu yüzden seviye için değil, **zaman içindeki değişim** için kullanılıyor.
 - İlçe kırılımı yok, İstanbul geneli tek değer.
+
+### Güzergâh hesabı hakkında
+
+- **Neden dakika yok?** Güzergâh (kaç durak, kaç aktarma, kaç km) tamamen veriden çıkıyor. Dakikaya çevirmek için hız gerekiyor ve raylı sistem hız/sefer süresi verisi bulunamadı. Uydurma bir hız katsayısıyla "47 dakika" yazmak, projenin tüm kurallarını çiğnerdi.
+- **Sıralama nasıl doğrulandı?** Kadıköy → Levent için M4 (Kadıköy→Ayrılık Çeşmesi) → Marmaray (→Yenikapı) → M2 (→Levent) çıkıyor; gerçekte insanların gittiği yol bu. Üsküdar → Levent, Esenler → Levent ve Bağcılar → Kabataş da gerçek güzergâhlarla uyuşuyor. Bu kontroller birim testlere yazıldı.
+- **Aktarma cezası bir modelleme tercihidir, ölçüm değil.** Sırf mesafeyi en aza indiren yol bazen üç aktarmalı saçma güzergâhlar üretiyordu. `TRANSFER_PENALTY_KM = 2` ("bir aktarma yaklaşık 2 km yol kadar zahmetlidir") sadece yol seçimini etkiler; gösterilen km gerçek mesafedir.
+- **Yolculuk ilçe merkezine en yakın istasyondan başlar**, kullanıcının evinden değil. Bu mesafe 5 km'yi aşınca kart rozeti kırmızıya döner ve "+ 32,5 km istasyona" diye yazar - yoksa "Çatalca'dan işe 11 durak" yanıltıcı olurdu.
 
 ### Araştırma notları (neyin neden olmadığı)
 
@@ -103,6 +111,8 @@ out center tags;
 | `GET /api/cost-index` | Sadece yaşam maliyeti endeksi (harita katmanı için) |
 | `GET /api/contributions` | Sepet kalemleri ve şimdiye kadar toplanan katkı sayıları |
 | `POST /api/contributions` | Kira ya da fiyat katkısı ekler |
+| `GET /api/commute` | Seçilebilecek istasyonlar |
+| `GET /api/commute?to=Levent` | Her ilçeden o istasyona güzergâh: durak, aktarma, km, bacaklar |
 | `GET /api/affordability?income=75000&areaM2=90&household=1&maxBurdenPct=60` | Gelire göre uygun semtler, kalan paraya göre sıralı |
 
 Örnek:
@@ -125,12 +135,13 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] **Birim testler** (45 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
+- [x] **İşe gidiş güzergâhı** - kullanıcı iş yerine yakın istasyonu girer, her ilçeden kaç durak / kaç aktarma / kaç km olduğu hesaplanır. Dijkstra, 314 istasyonluk ağ üzerinde. Kadıköy → Levent için M4 → Marmaray → M2 çıkarıyor, gerçek güzergâhla aynı
 - [x] **Kullanıcı katkı sistemi** - ilçe panelinden kendi kiranı ve gündelik fiyatları girme. Açık kaynağı olmayan iki veriyi doldurmanın tek yolu. Kira katkıları 20 kaydı geçince ilçenin ortalaması yayınlanmış çapa yerine kendi kayıtlarımızın medyanından hesaplanmaya başlar (IQR filtresi devreye girer)
 - [x] **TCMB kira endeksi** - İstanbul geneli birim kira serisi; bağımsız çapraz kontrol olarak gösteriliyor ve çapalar bayatladığında oranlayarak güncelleyecek
 - [x] **İlçe detay paneli** - satıra/haritaya/çubuğa tıklayınca sağdan açılır; kira özeti ve hızlı ulaşım hat hat: hattın kodu, türü (metro/tramvay/banliyö/metrobüs), adı, o ilçedeki istasyonları ve hattın İstanbul genelindeki toplam istasyon sayısı
 
 ### Sıradaki
-- [ ] **Kapı-kapı yolculuk süresi** - kullanıcı iş konumunu girsin, her ilçeden süre hesaplansın. İstasyon konumları hazır; rota motoru (OpenTripPlanner vb.) gerekiyor. Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
+- [ ] **Yolculuk süresi (dakika)** - güzergâh hesabı çalışıyor ama süre yok: raylı sistem hız verisi bulunamadı. Hat uzunluğu + uçtan uca sefer süresi yayınlanmış bir kaynak bulunursa eklenebilir.
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
 - [ ] `db push` yerine versiyonlu `prisma migrate`
 - [ ] Vercel'e deploy
@@ -153,8 +164,11 @@ data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
   transit-stations.json   389 istasyon (raylı sistem + metrobüs), kaynak bazlı
   bus-service.json        39 ilçe için otobüs hizmet yoğunluğu
   rent-index.json         TCMB İstanbul kira endeksi, 34 çeyrek
+  rail-network.json       23 hat, 314 istasyon, sıralı
 scripts/build_bus_service.py     GTFS'ten ilçe bazlı otobüs sıklığı üretir
 scripts/fetch_evds_rent_index.py TCMB'den İstanbul kira endeksini çeker
+scripts/build_rail_network.py    İstasyonları hat hat sıraya dizer
+src/lib/rail-graph.ts            Ağ + Dijkstra ile en kısa yol
 prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi

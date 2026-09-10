@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { AffordabilityRow, DistrictStation, Provenance } from "@/lib/aggregate";
 import { RentChart } from "@/components/Charts";
 import { METRIC_HINTS, METRIC_LABELS, type MapMetric } from "@/lib/map-metrics";
+import type { Route } from "@/lib/rail-graph";
 import ContributionForm from "@/components/ContributionForm";
 import ThemeToggle from "@/components/ThemeToggle";
 import { formatDepartures, formatKm, formatPct, formatTRY } from "@/lib/format";
@@ -19,6 +20,11 @@ const MapPanel = dynamic(() => import("@/components/MapPanel"), {
     />
   ),
 });
+
+export type CommuteInfo = {
+  origin: { station: string; kmFromCenter: number | null } | null;
+  route: Route | null;
+};
 
 export type DashboardInput = {
   income: number;
@@ -194,6 +200,11 @@ export default function Dashboard({
     priceContributions: number;
   } | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  // İş yeri istasyonu: seçilince her ilçe için güzergâh hesaplanır
+  const [stations, setStations] = useState<{ name: string; lines: string[] }[]>([]);
+  const [workStation, setWorkStation] = useState("");
+  const [commute, setCommute] = useState<Record<string, CommuteInfo>>({});
+  const [commuteError, setCommuteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!input.income || input.income <= 0) return;
@@ -236,6 +247,45 @@ export default function Dashboard({
   }, [input]);
 
   useEffect(() => {
+    fetch("/api/commute")
+      .then((r) => r.json())
+      .then((d) => setStations(d.stations ?? []))
+      .catch(() => setStations([]));
+  }, []);
+
+  useEffect(() => {
+    const known = stations.some((s) => s.name === workStation);
+    if (!workStation || !known) {
+      setCommute({});
+      setCommuteError(null);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/commute?to=${encodeURIComponent(workStation)}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) {
+          setCommuteError(d.error);
+          setCommute({});
+          return;
+        }
+        setCommuteError(null);
+        setCommute(
+          Object.fromEntries(
+            (d.neighborhoods ?? []).map((n: { slug: string } & CommuteInfo) => [
+              n.slug,
+              { origin: n.origin, route: n.route },
+            ]),
+          ),
+        );
+      })
+      .catch((err) => {
+        if ((err as Error).name !== "AbortError") setCommuteError("Güzergâh hesaplanamadı");
+      });
+    return () => controller.abort();
+  }, [workStation, stations]);
+
+  useEffect(() => {
     fetch("/api/contributions")
       .then((r) => r.json())
       .then((d) => setContribTotals(d.totals ?? null))
@@ -256,6 +306,7 @@ export default function Dashboard({
   const cheapest = [...withRent].sort((a, b) => a.estimatedRent! - b.estimatedRent!)[0];
   const priciest = [...withRent].sort((a, b) => b.estimatedRent! - a.estimatedRent!)[0];
   const selected = rows.find((r) => r.slug === selectedSlug) ?? null;
+  const selectedCommute = selectedSlug ? commute[selectedSlug] : undefined;
   const hasCostData = rows.some((r) => r.cost !== null);
   const totalStations = rows.reduce((sum, r) => sum + (r.transit?.existingStations ?? 0), 0);
   const railless = rows.filter((r) => r.transit && r.transit.existingStations === 0);
@@ -281,7 +332,7 @@ export default function Dashboard({
           Şu iki bilgiyi gir, her ilçede ne kadar kira ödeyeceğini ve bunun gelirinin
           ne kadarı olduğunu hesaplayalım.
         </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NumberField
             label="Aylık net gelirin ne kadar?"
             help="Eline geçen para. Kiranın gelirinin yüzde kaçını götürdüğünü buna göre hesaplıyoruz."
@@ -300,6 +351,35 @@ export default function Dashboard({
             suffix="m²"
             onChange={(v) => setInput((s) => ({ ...s, areaM2: Math.max(1, v) }))}
           />
+          <label className="flex flex-col gap-1.5">
+            <span className="font-medium">İşin hangi istasyona yakın?</span>
+            <input
+              list="pp-stations"
+              value={workStation}
+              onChange={(e) => setWorkStation(e.target.value)}
+              placeholder="İsteğe bağlı - ör. Levent"
+              className="w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2"
+              style={{
+                background: "var(--page)",
+                borderColor: "var(--border)",
+                color: "var(--text-primary)",
+              }}
+            />
+            <datalist id="pp-stations">
+              {stations.map((st) => (
+                <option key={st.name} value={st.name}>
+                  {st.lines.join(", ")}
+                </option>
+              ))}
+            </datalist>
+            <span className="leading-snug" style={{ color: "var(--text-muted)" }}>
+              {commuteError
+                ? commuteError
+                : Object.keys(commute).length > 0
+                  ? `Her ilçeden ${workStation} istasyonuna kaç durak ve kaç aktarma olduğu kartlarda görünüyor.`
+                  : "Yazmaya başla, istasyonlar listelenir. Girersen her ilçeden işe kaç durak olduğunu hesaplarız."}
+            </span>
+          </label>
         </div>
       </div>
 
@@ -485,6 +565,30 @@ export default function Dashboard({
                         otobüs {formatDepartures(row.bus.departuresPerStop)}/gün
                       </span>
                     )}
+                    {commute[row.slug]?.route &&
+                      (() => {
+                        const info = commute[row.slug];
+                        const accessKm = info.origin?.kmFromCenter ?? 0;
+                        // İstasyon uzaksa "11 durak" tek başına yanıltıcı olur:
+                        // önce o mesafeyi kat etmen gerekiyor
+                        const farAccess = accessKm > 5;
+                        return (
+                          <span
+                            className="rounded-md px-2 py-0.5 font-medium"
+                            style={{
+                              background: farAccess
+                                ? "var(--status-critical)"
+                                : "var(--series-rent)",
+                              color: "#fcfcfb",
+                            }}
+                            title={`Yolculuk ${info.origin?.station} istasyonundan başlıyor`}
+                          >
+                            işe {info.route!.stops} durak
+                            {info.route!.transfers > 0 && ` · ${info.route!.transfers} aktarma`}
+                            {farAccess && ` + ${formatKm(accessKm)} istasyona`}
+                          </span>
+                        );
+                      })()}
                   </div>
                 </button>
               </li>
@@ -700,6 +804,53 @@ export default function Dashboard({
                 <p className="mt-2">
                   <SourceNote sources={[selected.bus.provenance]} />
                 </p>
+              </section>
+            )}
+
+            {selectedCommute?.route && (
+              <section className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <h3 className="font-semibold">
+                  {workStation} istasyonuna
+                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
+                    {selectedCommute.route.stops} durak ·{" "}
+                    {selectedCommute.route.transfers} aktarma ·{" "}
+                    {formatKm(selectedCommute.route.km)}
+                  </span>
+                </h3>
+                <ol className="mt-3 space-y-2">
+                  {selectedCommute.route.legs.map((leg, i) => (
+                    <li key={`${leg.line}-${i}`} className="flex flex-wrap items-baseline gap-x-2">
+                      <span
+                        className="rounded px-1.5 py-0.5 font-semibold"
+                        style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
+                      >
+                        {leg.line}
+                      </span>
+                      <span>
+                        {leg.from} → {leg.to}
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        {leg.stops} durak · {formatKm(leg.km)}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                {selectedCommute.origin && (
+                  <p
+                    className="mt-3 rounded-lg p-2.5"
+                    style={{ background: "var(--page)", color: "var(--text-secondary)" }}
+                  >
+                    Yolculuk <b>{selectedCommute.origin.station}</b> istasyonundan başlıyor;
+                    ilçe merkezine {formatKm(selectedCommute.origin.kmFromCenter ?? 0)} uzakta.
+                    {(selectedCommute.origin.kmFromCenter ?? 0) > 5 && (
+                      <b> Bu mesafeyi ayrıca kat etmen gerekiyor.</b>
+                    )}
+                    <span className="block" style={{ color: "var(--text-muted)" }}>
+                      Süre değil durak/aktarma/mesafe veriliyor: raylı sistem hız verisi
+                      bağlanmadı, uydurma bir süre göstermek istemedik.
+                    </span>
+                  </p>
+                )}
               </section>
             )}
 

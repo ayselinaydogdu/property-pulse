@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "description": "Raylı sistem ağı: hat başına sıralı istasyonlar ve ardışık istasyonlar arası kuş uçuşu mesafe (km).",
+    "description": "Hızlı ulaşım ağı (raylı sistem + metrobüs): hat başına sıralı istasyonlar ve ardışık istasyonlar arası kuş uçuşu mesafe (km).",
     "method": "DERIVED",
     "source": "İBB Açık Veri - Raylı Sistem İstasyon Noktaları Verisi",
     "sourceUrl": "https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi",
@@ -9,9 +9,18 @@
     "caveats": [
       "Mesafeler kuş uçuşudur, ray boyu değil - gerçek mesafe biraz daha uzundur.",
       "Şubeli hatlarda zincir şubeye atlarken bozulur; bu noktalar branchGaps altında listelenir.",
-      "Metrobüs bu ağa dahil değildir."
+      "Metrobüs koridoru dahildir; ayrılmış yolda sabit istasyonlarla çalıştığı için rota açısından raylı sistemden farksız."
     ],
     "branchGaps": [
+      {
+        "line": "Metrobüs",
+        "between": [
+          "Zincirlikuyu",
+          "15 Temmuz Şehitler Köprüsü"
+        ],
+        "km": 4.169,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
       {
         "line": "M11",
         "between": [
@@ -69,6 +78,288 @@
     ]
   },
   "lines": {
+    "Metrobüs": {
+      "lineName": "Beylikdüzü Sondurak - Söğütlüçeşme metrobüs koridoru",
+      "mode": "Metrobüs",
+      "stations": [
+        {
+          "name": "B.Sondurak",
+          "lat": 41.022238,
+          "lng": 28.625299,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Beykent",
+          "lat": 41.019694,
+          "lng": 28.630828,
+          "kmFromPrev": 0.543
+        },
+        {
+          "name": "Cumhuriyet Mahallesi",
+          "lat": 41.015434,
+          "lng": 28.641844,
+          "kmFromPrev": 1.038
+        },
+        {
+          "name": "B.Belediye",
+          "lat": 41.012516,
+          "lng": 28.64949,
+          "kmFromPrev": 0.719
+        },
+        {
+          "name": "Beylikdüzü",
+          "lat": 41.009809,
+          "lng": 28.656695,
+          "kmFromPrev": 0.675
+        },
+        {
+          "name": "Güzelyurt",
+          "lat": 41.006685,
+          "lng": 28.665294,
+          "kmFromPrev": 0.801
+        },
+        {
+          "name": "Haramidere",
+          "lat": 41.006075,
+          "lng": 28.672942,
+          "kmFromPrev": 0.646
+        },
+        {
+          "name": "H.Sanayi",
+          "lat": 41.004574,
+          "lng": 28.684762,
+          "kmFromPrev": 1.007
+        },
+        {
+          "name": "Saadetdere Mahallesi",
+          "lat": 40.999894,
+          "lng": 28.6927,
+          "kmFromPrev": 0.844
+        },
+        {
+          "name": "Mustafa Kemalpaşa",
+          "lat": 40.995005,
+          "lng": 28.706329,
+          "kmFromPrev": 1.266
+        },
+        {
+          "name": "Cihangir - Üniv.Mah.",
+          "lat": 40.990583,
+          "lng": 28.713938,
+          "kmFromPrev": 0.805
+        },
+        {
+          "name": "Avcılar Mrk.Ünv.Kmp.",
+          "lat": 40.983563,
+          "lng": 28.726183,
+          "kmFromPrev": 1.289
+        },
+        {
+          "name": "Avcılar",
+          "lat": 40.986025,
+          "lng": 28.730793,
+          "kmFromPrev": 0.473
+        },
+        {
+          "name": "Şükrübey",
+          "lat": 40.979917,
+          "lng": 28.732257,
+          "kmFromPrev": 0.686
+        },
+        {
+          "name": "İbb Sosyal Tesisleri",
+          "lat": 40.978082,
+          "lng": 28.74507,
+          "kmFromPrev": 1.096
+        },
+        {
+          "name": "Küçükçekmece",
+          "lat": 40.986407,
+          "lng": 28.769854,
+          "kmFromPrev": 2.277
+        },
+        {
+          "name": "Cennet Mahallesi",
+          "lat": 40.985329,
+          "lng": 28.782297,
+          "kmFromPrev": 1.052
+        },
+        {
+          "name": "Florya",
+          "lat": 40.986635,
+          "lng": 28.788272,
+          "kmFromPrev": 0.522
+        },
+        {
+          "name": "Beşyol",
+          "lat": 40.994181,
+          "lng": 28.794838,
+          "kmFromPrev": 1.0
+        },
+        {
+          "name": "Sefaköy",
+          "lat": 40.998529,
+          "lng": 28.798458,
+          "kmFromPrev": 0.569
+        },
+        {
+          "name": "Yenibosna",
+          "lat": 40.992448,
+          "lng": 28.833298,
+          "kmFromPrev": 3.003
+        },
+        {
+          "name": "Şirinevler",
+          "lat": 40.991737,
+          "lng": 28.845884,
+          "kmFromPrev": 1.06
+        },
+        {
+          "name": "Bahçelievler",
+          "lat": 40.995172,
+          "lng": 28.863871,
+          "kmFromPrev": 1.558
+        },
+        {
+          "name": "İncirli",
+          "lat": 40.998356,
+          "lng": 28.874407,
+          "kmFromPrev": 0.953
+        },
+        {
+          "name": "Zeytinburnu",
+          "lat": 41.003423,
+          "lng": 28.890929,
+          "kmFromPrev": 1.497
+        },
+        {
+          "name": "Merter",
+          "lat": 41.007857,
+          "lng": 28.897719,
+          "kmFromPrev": 0.752
+        },
+        {
+          "name": "Cevizlibağ",
+          "lat": 41.016635,
+          "lng": 28.911271,
+          "kmFromPrev": 1.496
+        },
+        {
+          "name": "Topkapı - Şehit Mustafa Cambaz",
+          "lat": 41.020212,
+          "lng": 28.917142,
+          "kmFromPrev": 0.632
+        },
+        {
+          "name": "Bayrampaşa - Maltepe / Koç Üniversitesi Hastanesi",
+          "lat": 41.023838,
+          "lng": 28.921433,
+          "kmFromPrev": 0.539
+        },
+        {
+          "name": "Edirnekapı Garajı",
+          "lat": 41.029465,
+          "lng": 28.926457,
+          "kmFromPrev": 0.752
+        },
+        {
+          "name": "Edirnekapı",
+          "lat": 41.034016,
+          "lng": 28.930641,
+          "kmFromPrev": 0.614
+        },
+        {
+          "name": "Ayvansaray Eyüpsultan",
+          "lat": 41.039031,
+          "lng": 28.937908,
+          "kmFromPrev": 0.825
+        },
+        {
+          "name": "Halıcıoğlu",
+          "lat": 41.048583,
+          "lng": 28.946134,
+          "kmFromPrev": 1.262
+        },
+        {
+          "name": "Okmeydanı",
+          "lat": 41.056395,
+          "lng": 28.960995,
+          "kmFromPrev": 1.517
+        },
+        {
+          "name": "Darülaceze Perpa",
+          "lat": 41.061996,
+          "lng": 28.967439,
+          "kmFromPrev": 0.822
+        },
+        {
+          "name": "Okmeydanı Hastane",
+          "lat": 41.067367,
+          "lng": 28.975806,
+          "kmFromPrev": 0.92
+        },
+        {
+          "name": "Çağlayan",
+          "lat": 41.067378,
+          "lng": 28.980955,
+          "kmFromPrev": 0.432
+        },
+        {
+          "name": "Mecidiyeköy",
+          "lat": 41.066882,
+          "lng": 28.991628,
+          "kmFromPrev": 0.897
+        },
+        {
+          "name": "Zincirlikuyu",
+          "lat": 41.066098,
+          "lng": 29.013133,
+          "kmFromPrev": 1.807
+        },
+        {
+          "name": "15 Temmuz Şehitler Köprüsü",
+          "lat": 41.036319,
+          "lng": 29.043586,
+          "kmFromPrev": 4.169
+        },
+        {
+          "name": "Burhaniye",
+          "lat": 41.032222,
+          "lng": 29.047104,
+          "kmFromPrev": 0.541
+        },
+        {
+          "name": "Altunizade",
+          "lat": 41.021808,
+          "lng": 29.04846,
+          "kmFromPrev": 1.157
+        },
+        {
+          "name": "Acıbadem",
+          "lat": 41.014611,
+          "lng": 29.057195,
+          "kmFromPrev": 1.082
+        },
+        {
+          "name": "Uzunçayır",
+          "lat": 40.998964,
+          "lng": 29.056576,
+          "kmFromPrev": 1.731
+        },
+        {
+          "name": "Fikirtepe",
+          "lat": 40.993803,
+          "lng": 29.047629,
+          "kmFromPrev": 0.944
+        },
+        {
+          "name": "Söğütlüçeşme",
+          "lat": 40.991397,
+          "lng": 29.037928,
+          "kmFromPrev": 0.857
+        }
+      ]
+    },
     "Tramvay": {
       "lineName": "Eminönü - Eyüp - Alibeyköy Tramvay Hattı",
       "mode": "Tramvay",

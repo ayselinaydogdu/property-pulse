@@ -74,8 +74,10 @@ def main() -> None:
         s
         for src in data["sources"]
         for s in src["stations"]
-        # Metrobüs ayrı bir ağ; raylı sistem grafiğine karıştırılmıyor
-        if s["stage"] == "EXISTING" and s["mode"] != "Metrobüs"
+        # Metrobüs de dahil: ayrılmış yolda sabit istasyonlu bir koridor,
+        # rota açısından raylı sistemden farkı yok. Dışarıda bırakınca
+        # Esenyurt, Beylikdüzü gibi ilçeler ağa hiç bağlanamıyordu.
+        if s["stage"] == "EXISTING"
     ]
 
     by_line: dict[str, list[dict]] = {}
@@ -109,7 +111,7 @@ def main() -> None:
         json.dumps(
             {
                 "_meta": {
-                    "description": "Raylı sistem ağı: hat başına sıralı istasyonlar ve ardışık istasyonlar arası kuş uçuşu mesafe (km).",
+                    "description": "Hızlı ulaşım ağı (raylı sistem + metrobüs): hat başına sıralı istasyonlar ve ardışık istasyonlar arası kuş uçuşu mesafe (km).",
                     "method": "DERIVED",
                     "source": "İBB Açık Veri - Raylı Sistem İstasyon Noktaları Verisi",
                     "sourceUrl": "https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi",
@@ -118,7 +120,7 @@ def main() -> None:
                     "caveats": [
                         "Mesafeler kuş uçuşudur, ray boyu değil - gerçek mesafe biraz daha uzundur.",
                         "Şubeli hatlarda zincir şubeye atlarken bozulur; bu noktalar branchGaps altında listelenir.",
-                        "Metrobüs bu ağa dahil değildir.",
+                        "Metrobüs koridoru dahildir; ayrılmış yolda sabit istasyonlarla çalıştığı için rota açısından raylı sistemden farksız.",
                     ],
                     "branchGaps": branch_gaps,
                 },
