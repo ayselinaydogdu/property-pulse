@@ -1,0 +1,1813 @@
+{
+  "_meta": {
+    "description": "Raylı sistem ağı: hat başına sıralı istasyonlar ve ardışık istasyonlar arası kuş uçuşu mesafe (km).",
+    "method": "DERIVED",
+    "source": "İBB Açık Veri - Raylı Sistem İstasyon Noktaları Verisi",
+    "sourceUrl": "https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi",
+    "producedBy": "scripts/build_rail_network.py",
+    "howOrdered": "En uzak iki istasyondan biri uç kabul edilip en yakın komşuya zincirleme. M4, Marmaray ve T1'de gerçek hat sıralamasıyla doğrulandı.",
+    "caveats": [
+      "Mesafeler kuş uçuşudur, ray boyu değil - gerçek mesafe biraz daha uzundur.",
+      "Şubeli hatlarda zincir şubeye atlarken bozulur; bu noktalar branchGaps altında listelenir.",
+      "Metrobüs bu ağa dahil değildir."
+    ],
+    "branchGaps": [
+      {
+        "line": "M11",
+        "between": [
+          "Kağıthane",
+          "Hasdal"
+        ],
+        "km": 5.179,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
+      {
+        "line": "M11",
+        "between": [
+          "Hasdal",
+          "Kemerburgaz"
+        ],
+        "km": 5.189,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
+      {
+        "line": "M11",
+        "between": [
+          "Göktürk",
+          "İhsaniye"
+        ],
+        "km": 9.614,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
+      {
+        "line": "M1A",
+        "between": [
+          "Havaalanı",
+          "Kocatepe"
+        ],
+        "km": 9.854,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
+      {
+        "line": "M2",
+        "between": [
+          "Yenikapı",
+          "Seyrantepe"
+        ],
+        "km": 11.209,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      },
+      {
+        "line": "M3",
+        "between": [
+          "Kirazlı",
+          "Başakşehir - Metrokent"
+        ],
+        "km": 8.958,
+        "note": "Anormal boşluk - hattın burada şubelendiği ya da veride boşluk olduğu anlamına gelir; bu noktada sıralama güvenilir değil."
+      }
+    ]
+  },
+  "lines": {
+    "Tramvay": {
+      "lineName": "Eminönü - Eyüp - Alibeyköy Tramvay Hattı",
+      "mode": "Tramvay",
+      "stations": [
+        {
+          "name": "Alibeyköy Cep Otogarı",
+          "lat": 41.086888,
+          "lng": 28.943917,
+          "kmFromPrev": 0.0
+        }
+      ]
+    },
+    "F1": {
+      "lineName": "F1 Taksim - Kabataş Füniküler Hattı",
+      "mode": "Füniküler",
+      "stations": [
+        {
+          "name": "Kabataş",
+          "lat": 41.03398,
+          "lng": 28.99203,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Taksim",
+          "lat": 41.036611,
+          "lng": 28.986995,
+          "kmFromPrev": 0.513
+        }
+      ]
+    },
+    "F2": {
+      "lineName": "F2 Karaköy - Beyoğlu Tünel Füniküler Hattı",
+      "mode": "Füniküler",
+      "stations": [
+        {
+          "name": "Karaköy",
+          "lat": 41.022773,
+          "lng": 28.974038,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Tünel",
+          "lat": 41.028421,
+          "lng": 28.974049,
+          "kmFromPrev": 0.625
+        }
+      ]
+    },
+    "Metro": {
+      "lineName": "Gayrettepe - İstanbul Havalimanı Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Gayrettepe",
+          "lat": 41.06719,
+          "lng": 29.010907,
+          "kmFromPrev": 0.0
+        }
+      ]
+    },
+    "Marmaray": {
+      "lineName": "Halkalı - Gebze Marmaray Yüzeysel Raylı Sistem Hattı",
+      "mode": "Banliyö",
+      "stations": [
+        {
+          "name": "Gebze",
+          "lat": 40.784064,
+          "lng": 29.409966,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Darıca",
+          "lat": 40.791345,
+          "lng": 29.391975,
+          "kmFromPrev": 1.717
+        },
+        {
+          "name": "Osmangazi",
+          "lat": 40.799228,
+          "lng": 29.380038,
+          "kmFromPrev": 1.331
+        },
+        {
+          "name": "Fatih",
+          "lat": 40.80751,
+          "lng": 29.363855,
+          "kmFromPrev": 1.643
+        },
+        {
+          "name": "Çayırova",
+          "lat": 40.810377,
+          "lng": 29.347446,
+          "kmFromPrev": 1.418
+        },
+        {
+          "name": "Tuzla",
+          "lat": 40.829952,
+          "lng": 29.32236,
+          "kmFromPrev": 3.025
+        },
+        {
+          "name": "İçmeler",
+          "lat": 40.845651,
+          "lng": 29.300061,
+          "kmFromPrev": 2.557
+        },
+        {
+          "name": "Aydıntepe",
+          "lat": 40.852289,
+          "lng": 29.293166,
+          "kmFromPrev": 0.936
+        },
+        {
+          "name": "Güzelyalı",
+          "lat": 40.856855,
+          "lng": 29.283496,
+          "kmFromPrev": 0.958
+        },
+        {
+          "name": "Tersane",
+          "lat": 40.860977,
+          "lng": 29.273364,
+          "kmFromPrev": 0.967
+        },
+        {
+          "name": "Kaynarca",
+          "lat": 40.871303,
+          "lng": 29.256034,
+          "kmFromPrev": 1.853
+        },
+        {
+          "name": "Pendik",
+          "lat": 40.880207,
+          "lng": 29.231672,
+          "kmFromPrev": 2.275
+        },
+        {
+          "name": "Yunus",
+          "lat": 40.884505,
+          "lng": 29.210535,
+          "kmFromPrev": 1.841
+        },
+        {
+          "name": "Kartal",
+          "lat": 40.888613,
+          "lng": 29.19119,
+          "kmFromPrev": 1.69
+        },
+        {
+          "name": "Başak",
+          "lat": 40.890559,
+          "lng": 29.177353,
+          "kmFromPrev": 1.184
+        },
+        {
+          "name": "Atalar",
+          "lat": 40.898588,
+          "lng": 29.169454,
+          "kmFromPrev": 1.109
+        },
+        {
+          "name": "Cevizli",
+          "lat": 40.910015,
+          "lng": 29.156045,
+          "kmFromPrev": 1.694
+        },
+        {
+          "name": "Maltepe",
+          "lat": 40.920646,
+          "lng": 29.133526,
+          "kmFromPrev": 2.229
+        },
+        {
+          "name": "Süreyya Plajı",
+          "lat": 40.92683,
+          "lng": 29.124205,
+          "kmFromPrev": 1.04
+        },
+        {
+          "name": "İdealtepe",
+          "lat": 40.937807,
+          "lng": 29.114256,
+          "kmFromPrev": 1.474
+        },
+        {
+          "name": "Küçükyalı",
+          "lat": 40.946257,
+          "lng": 29.106822,
+          "kmFromPrev": 1.124
+        },
+        {
+          "name": "Bostancı",
+          "lat": 40.9538,
+          "lng": 29.095059,
+          "kmFromPrev": 1.294
+        },
+        {
+          "name": "Suadiye",
+          "lat": 40.960475,
+          "lng": 29.084419,
+          "kmFromPrev": 1.16
+        },
+        {
+          "name": "Erenköy",
+          "lat": 40.971409,
+          "lng": 29.076473,
+          "kmFromPrev": 1.381
+        },
+        {
+          "name": "Göztepe",
+          "lat": 40.979165,
+          "lng": 29.062559,
+          "kmFromPrev": 1.45
+        },
+        {
+          "name": "Feneryolu",
+          "lat": 40.978696,
+          "lng": 29.049008,
+          "kmFromPrev": 1.14
+        },
+        {
+          "name": "Söğütlüçeşme",
+          "lat": 40.990902,
+          "lng": 29.037628,
+          "kmFromPrev": 1.654
+        },
+        {
+          "name": "Ayrılık Çeşmesi",
+          "lat": 41.000077,
+          "lng": 29.030124,
+          "kmFromPrev": 1.194
+        },
+        {
+          "name": "Üsküdar",
+          "lat": 41.0257,
+          "lng": 29.013522,
+          "kmFromPrev": 3.158
+        },
+        {
+          "name": "Sirkeci",
+          "lat": 41.013584,
+          "lng": 28.977125,
+          "kmFromPrev": 3.338
+        },
+        {
+          "name": "Yenikapı",
+          "lat": 41.00502,
+          "lng": 28.950827,
+          "kmFromPrev": 2.403
+        },
+        {
+          "name": "Kazlıçeşme",
+          "lat": 40.992686,
+          "lng": 28.916878,
+          "kmFromPrev": 3.162
+        },
+        {
+          "name": "Zeytinburnu",
+          "lat": 40.985878,
+          "lng": 28.905444,
+          "kmFromPrev": 1.221
+        },
+        {
+          "name": "Yenimahalle",
+          "lat": 40.981733,
+          "lng": 28.881055,
+          "kmFromPrev": 2.1
+        },
+        {
+          "name": "Bakırköy",
+          "lat": 40.980242,
+          "lng": 28.872332,
+          "kmFromPrev": 0.751
+        },
+        {
+          "name": "Ataköy",
+          "lat": 40.980216,
+          "lng": 28.856224,
+          "kmFromPrev": 1.354
+        },
+        {
+          "name": "Yeşilyurt",
+          "lat": 40.965469,
+          "lng": 28.837275,
+          "kmFromPrev": 2.279
+        },
+        {
+          "name": "Yeşilköy",
+          "lat": 40.962653,
+          "lng": 28.824893,
+          "kmFromPrev": 1.086
+        },
+        {
+          "name": "Florya Akvaryum",
+          "lat": 40.967766,
+          "lng": 28.797028,
+          "kmFromPrev": 2.41
+        },
+        {
+          "name": "Florya",
+          "lat": 40.972961,
+          "lng": 28.787473,
+          "kmFromPrev": 0.987
+        },
+        {
+          "name": "Küçükçekmece",
+          "lat": 40.988524,
+          "lng": 28.772942,
+          "kmFromPrev": 2.11
+        },
+        {
+          "name": "Mustafa Kemal",
+          "lat": 41.006262,
+          "lng": 28.773927,
+          "kmFromPrev": 1.963
+        },
+        {
+          "name": "Halkalı",
+          "lat": 41.017824,
+          "lng": 28.7664,
+          "kmFromPrev": 1.426
+        }
+      ]
+    },
+    "M11": {
+      "lineName": "M11 Gayrettepe - İstanbul Havalimanı Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Kağıthane",
+          "lat": 41.080165,
+          "lng": 28.976364,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Hasdal",
+          "lat": 41.1213,
+          "lng": 28.946846,
+          "kmFromPrev": 5.179
+        },
+        {
+          "name": "Kemerburgaz",
+          "lat": 41.15913,
+          "lng": 28.910227,
+          "kmFromPrev": 5.189
+        },
+        {
+          "name": "Göktürk",
+          "lat": 41.176956,
+          "lng": 28.883667,
+          "kmFromPrev": 2.973
+        },
+        {
+          "name": "İhsaniye",
+          "lat": 41.24296,
+          "lng": 28.808929,
+          "kmFromPrev": 9.614
+        },
+        {
+          "name": "Yeni Havalimanı - 2",
+          "lat": 41.256408,
+          "lng": 28.768533,
+          "kmFromPrev": 3.693
+        },
+        {
+          "name": "Yeni Havalimanı - 1",
+          "lat": 41.255936,
+          "lng": 28.742639,
+          "kmFromPrev": 2.168
+        },
+        {
+          "name": "Yeni Havalimanı - 3",
+          "lat": 41.255433,
+          "lng": 28.712767,
+          "kmFromPrev": 2.501
+        }
+      ]
+    },
+    "M1A": {
+      "lineName": "M1A Yenikapı - Atatürk Havalimanı Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Aksaray",
+          "lat": 41.012008,
+          "lng": 28.94809,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Yenikapı",
+          "lat": 41.005589,
+          "lng": 28.950476,
+          "kmFromPrev": 0.738
+        },
+        {
+          "name": "Emniyet - Fatih",
+          "lat": 41.01761,
+          "lng": 28.9396,
+          "kmFromPrev": 1.613
+        },
+        {
+          "name": "Topkapı - Ulubatlı",
+          "lat": 41.024023,
+          "lng": 28.930507,
+          "kmFromPrev": 1.042
+        },
+        {
+          "name": "Bayrampaşa",
+          "lat": 41.034096,
+          "lng": 28.920243,
+          "kmFromPrev": 1.408
+        },
+        {
+          "name": "Sağmalcılar",
+          "lat": 41.040853,
+          "lng": 28.907239,
+          "kmFromPrev": 1.323
+        },
+        {
+          "name": "Otogar",
+          "lat": 41.040142,
+          "lng": 28.894564,
+          "kmFromPrev": 1.067
+        },
+        {
+          "name": "Esenler",
+          "lat": 41.037048,
+          "lng": 28.888451,
+          "kmFromPrev": 0.617
+        },
+        {
+          "name": "Terazidere",
+          "lat": 41.03033,
+          "lng": 28.897956,
+          "kmFromPrev": 1.09
+        },
+        {
+          "name": "Davutpaşa - YTÜ",
+          "lat": 41.020651,
+          "lng": 28.900212,
+          "kmFromPrev": 1.087
+        },
+        {
+          "name": "Merter",
+          "lat": 41.007644,
+          "lng": 28.896181,
+          "kmFromPrev": 1.478
+        },
+        {
+          "name": "Zeytinburnu",
+          "lat": 41.001699,
+          "lng": 28.889656,
+          "kmFromPrev": 0.856
+        },
+        {
+          "name": "Bakırköy",
+          "lat": 40.99661,
+          "lng": 28.875404,
+          "kmFromPrev": 1.323
+        },
+        {
+          "name": "Bahçelievler",
+          "lat": 40.995351,
+          "lng": 28.86307,
+          "kmFromPrev": 1.046
+        },
+        {
+          "name": "Ataköy - Şirinevler",
+          "lat": 40.991348,
+          "lng": 28.846086,
+          "kmFromPrev": 1.494
+        },
+        {
+          "name": "Yenibosna",
+          "lat": 40.989313,
+          "lng": 28.836708,
+          "kmFromPrev": 0.819
+        },
+        {
+          "name": "Dünya Ticaret Merkezi",
+          "lat": 40.986644,
+          "lng": 28.828554,
+          "kmFromPrev": 0.746
+        },
+        {
+          "name": "Havaalanı",
+          "lat": 40.979541,
+          "lng": 28.821128,
+          "kmFromPrev": 1.003
+        },
+        {
+          "name": "Kocatepe",
+          "lat": 41.048457,
+          "lng": 28.89552,
+          "kmFromPrev": 9.854
+        }
+      ]
+    },
+    "M1B": {
+      "lineName": "M1B Yenikapı - Kirazlı Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Esenler",
+          "lat": 41.037681,
+          "lng": 28.888426,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Menderes",
+          "lat": 41.042757,
+          "lng": 28.878492,
+          "kmFromPrev": 1.005
+        },
+        {
+          "name": "Üçyüzlü",
+          "lat": 41.03672,
+          "lng": 28.870638,
+          "kmFromPrev": 0.938
+        },
+        {
+          "name": "Bağcılar Meydan",
+          "lat": 41.034515,
+          "lng": 28.856175,
+          "kmFromPrev": 1.239
+        },
+        {
+          "name": "Kirazlı",
+          "lat": 41.033171,
+          "lng": 28.842754,
+          "kmFromPrev": 1.137
+        }
+      ]
+    },
+    "M2": {
+      "lineName": "M2 Yenikapı Seyrantepe - Hacıosman Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Hacıosman",
+          "lat": 41.139773,
+          "lng": 29.030436,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Darüşşafaka",
+          "lat": 41.12958,
+          "lng": 29.025129,
+          "kmFromPrev": 1.212
+        },
+        {
+          "name": "Atatürk Oto Sanayi",
+          "lat": 41.118256,
+          "lng": 29.024194,
+          "kmFromPrev": 1.255
+        },
+        {
+          "name": "İTÜ Ayazağa",
+          "lat": 41.108093,
+          "lng": 29.020799,
+          "kmFromPrev": 1.159
+        },
+        {
+          "name": "Sanayi Mah.",
+          "lat": 41.094301,
+          "lng": 29.005531,
+          "kmFromPrev": 1.991
+        },
+        {
+          "name": "Sanayi Mah.",
+          "lat": 41.094342,
+          "lng": 29.005166,
+          "kmFromPrev": 0.031
+        },
+        {
+          "name": "4. Levent",
+          "lat": 41.086006,
+          "lng": 29.007094,
+          "kmFromPrev": 0.936
+        },
+        {
+          "name": "Levent",
+          "lat": 41.076772,
+          "lng": 29.013692,
+          "kmFromPrev": 1.161
+        },
+        {
+          "name": "Gayrettepe",
+          "lat": 41.068999,
+          "lng": 29.010924,
+          "kmFromPrev": 0.89
+        },
+        {
+          "name": "Şişli",
+          "lat": 41.064505,
+          "lng": 28.992674,
+          "kmFromPrev": 1.61
+        },
+        {
+          "name": "Osmanbey",
+          "lat": 41.052493,
+          "lng": 28.987415,
+          "kmFromPrev": 1.4
+        },
+        {
+          "name": "Taksim",
+          "lat": 41.038157,
+          "lng": 28.985659,
+          "kmFromPrev": 1.592
+        },
+        {
+          "name": "Şişhane - Zemin İstanbul",
+          "lat": 41.028291,
+          "lng": 28.972849,
+          "kmFromPrev": 1.532
+        },
+        {
+          "name": "Haliç",
+          "lat": 41.022435,
+          "lng": 28.966422,
+          "kmFromPrev": 0.843
+        },
+        {
+          "name": "Vezneciler - İstanbul Ünv.",
+          "lat": 41.012265,
+          "lng": 28.959835,
+          "kmFromPrev": 1.253
+        },
+        {
+          "name": "Yenikapı",
+          "lat": 41.005586,
+          "lng": 28.95142,
+          "kmFromPrev": 1.022
+        },
+        {
+          "name": "Seyrantepe",
+          "lat": 41.101113,
+          "lng": 28.996097,
+          "kmFromPrev": 11.209
+        }
+      ]
+    },
+    "M3": {
+      "lineName": "M3 Kirazlı - Kayaşehir Merkez Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Kayaşehir Merkez",
+          "lat": 41.119551,
+          "lng": 28.766509,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Toplu Konutlar",
+          "lat": 41.107395,
+          "lng": 28.767871,
+          "kmFromPrev": 1.349
+        },
+        {
+          "name": "Şehir Hastanesi",
+          "lat": 41.10331,
+          "lng": 28.777879,
+          "kmFromPrev": 0.953
+        },
+        {
+          "name": "Başak Konutları",
+          "lat": 41.097669,
+          "lng": 28.791287,
+          "kmFromPrev": 1.286
+        },
+        {
+          "name": "Siteler",
+          "lat": 41.088201,
+          "lng": 28.796514,
+          "kmFromPrev": 1.135
+        },
+        {
+          "name": "Turgut Özal",
+          "lat": 41.081184,
+          "lng": 28.797409,
+          "kmFromPrev": 0.779
+        },
+        {
+          "name": "İkitelli Sanayi",
+          "lat": 41.072432,
+          "lng": 28.802333,
+          "kmFromPrev": 1.052
+        },
+        {
+          "name": "İstoç",
+          "lat": 41.064998,
+          "lng": 28.825963,
+          "kmFromPrev": 2.147
+        },
+        {
+          "name": "Mahmutbey",
+          "lat": 41.054894,
+          "lng": 28.830539,
+          "kmFromPrev": 1.181
+        },
+        {
+          "name": "Yeni Mahalle",
+          "lat": 41.040355,
+          "lng": 28.835942,
+          "kmFromPrev": 1.67
+        },
+        {
+          "name": "Kirazlı",
+          "lat": 41.032771,
+          "lng": 28.842432,
+          "kmFromPrev": 1.0
+        },
+        {
+          "name": "Başakşehir - Metrokent",
+          "lat": 41.107588,
+          "lng": 28.801481,
+          "kmFromPrev": 8.958
+        },
+        {
+          "name": "Onurkent",
+          "lat": 41.113356,
+          "lng": 28.790453,
+          "kmFromPrev": 1.124
+        }
+      ]
+    },
+    "M4": {
+      "lineName": "M4 Kadıköy - SGH Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Kadıköy",
+          "lat": 40.990406,
+          "lng": 29.021955,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Ayrılık Çeşmesi",
+          "lat": 41.0001,
+          "lng": 29.030316,
+          "kmFromPrev": 1.282
+        },
+        {
+          "name": "Acıbadem",
+          "lat": 41.0023,
+          "lng": 29.044587,
+          "kmFromPrev": 1.223
+        },
+        {
+          "name": "Ünalan",
+          "lat": 40.998174,
+          "lng": 29.059885,
+          "kmFromPrev": 1.364
+        },
+        {
+          "name": "Göztepe",
+          "lat": 40.994046,
+          "lng": 29.070726,
+          "kmFromPrev": 1.019
+        },
+        {
+          "name": "Yenisahra",
+          "lat": 40.984729,
+          "lng": 29.090388,
+          "kmFromPrev": 1.947
+        },
+        {
+          "name": "Kozyatağı",
+          "lat": 40.975223,
+          "lng": 29.099693,
+          "kmFromPrev": 1.31
+        },
+        {
+          "name": "Bostancı",
+          "lat": 40.964578,
+          "lng": 29.10535,
+          "kmFromPrev": 1.269
+        },
+        {
+          "name": "Küçükyalı",
+          "lat": 40.94905,
+          "lng": 29.121854,
+          "kmFromPrev": 2.207
+        },
+        {
+          "name": "Maltepe",
+          "lat": 40.935819,
+          "lng": 29.13956,
+          "kmFromPrev": 2.087
+        },
+        {
+          "name": "Huzurevi",
+          "lat": 40.929943,
+          "lng": 29.147008,
+          "kmFromPrev": 0.902
+        },
+        {
+          "name": "Gülsuyu",
+          "lat": 40.923819,
+          "lng": 29.154623,
+          "kmFromPrev": 0.932
+        },
+        {
+          "name": "Esenkent",
+          "lat": 40.920883,
+          "lng": 29.166349,
+          "kmFromPrev": 1.038
+        },
+        {
+          "name": "Hastane - Adliye",
+          "lat": 40.91617,
+          "lng": 29.178772,
+          "kmFromPrev": 1.168
+        },
+        {
+          "name": "Soğanlık",
+          "lat": 40.913288,
+          "lng": 29.192398,
+          "kmFromPrev": 1.19
+        },
+        {
+          "name": "Kartal",
+          "lat": 40.906645,
+          "lng": 29.211384,
+          "kmFromPrev": 1.758
+        },
+        {
+          "name": "Yakacık - Adnan Kahveci",
+          "lat": 40.896729,
+          "lng": 29.227198,
+          "kmFromPrev": 1.724
+        },
+        {
+          "name": "Pendik",
+          "lat": 40.888724,
+          "lng": 29.238528,
+          "kmFromPrev": 1.301
+        },
+        {
+          "name": "Tavşantepe",
+          "lat": 40.882088,
+          "lng": 29.248837,
+          "kmFromPrev": 1.136
+        },
+        {
+          "name": "Fevzi Çakmak - Hastane",
+          "lat": 40.888642,
+          "lng": 29.262404,
+          "kmFromPrev": 1.352
+        },
+        {
+          "name": "Yayalar - Şeyhli",
+          "lat": 40.903741,
+          "lng": 29.275119,
+          "kmFromPrev": 1.983
+        },
+        {
+          "name": "Kurtköy",
+          "lat": 40.910134,
+          "lng": 29.296283,
+          "kmFromPrev": 1.916
+        },
+        {
+          "name": "Sabiha Gökçen",
+          "lat": 40.906545,
+          "lng": 29.311424,
+          "kmFromPrev": 1.334
+        }
+      ]
+    },
+    "M5": {
+      "lineName": "M5 Üsküdar - Çekmeköy Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Çekmeköy",
+          "lat": 41.014563,
+          "lng": 29.189208,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Necip Fazıl",
+          "lat": 41.016079,
+          "lng": 29.179206,
+          "kmFromPrev": 0.857
+        },
+        {
+          "name": "Dudullu",
+          "lat": 41.015267,
+          "lng": 29.162354,
+          "kmFromPrev": 1.418
+        },
+        {
+          "name": "İmam Hatip",
+          "lat": 41.015963,
+          "lng": 29.151519,
+          "kmFromPrev": 0.913
+        },
+        {
+          "name": "Altınşehir",
+          "lat": 41.016542,
+          "lng": 29.140562,
+          "kmFromPrev": 0.923
+        },
+        {
+          "name": "Ihlamurkuyu",
+          "lat": 41.019717,
+          "lng": 29.13047,
+          "kmFromPrev": 0.917
+        },
+        {
+          "name": "Çakmak",
+          "lat": 41.021541,
+          "lng": 29.118381,
+          "kmFromPrev": 1.035
+        },
+        {
+          "name": "Yamanevler",
+          "lat": 41.024155,
+          "lng": 29.108778,
+          "kmFromPrev": 0.857
+        },
+        {
+          "name": "Çarşı",
+          "lat": 41.025943,
+          "lng": 29.097319,
+          "kmFromPrev": 0.982
+        },
+        {
+          "name": "Ümraniye",
+          "lat": 41.024624,
+          "lng": 29.084781,
+          "kmFromPrev": 1.063
+        },
+        {
+          "name": "Bulgurlu",
+          "lat": 41.016344,
+          "lng": 29.076244,
+          "kmFromPrev": 1.163
+        },
+        {
+          "name": "Kısıklı",
+          "lat": 41.022183,
+          "lng": 29.062083,
+          "kmFromPrev": 1.353
+        },
+        {
+          "name": "Altunizade",
+          "lat": 41.021954,
+          "lng": 29.048291,
+          "kmFromPrev": 1.159
+        },
+        {
+          "name": "Bağlarbaşı",
+          "lat": 41.021915,
+          "lng": 29.036414,
+          "kmFromPrev": 0.998
+        },
+        {
+          "name": "Fıstık Ağacı",
+          "lat": 41.028254,
+          "lng": 29.028845,
+          "kmFromPrev": 0.946
+        },
+        {
+          "name": "Üsküdar",
+          "lat": 41.025297,
+          "lng": 29.012816,
+          "kmFromPrev": 1.385
+        }
+      ]
+    },
+    "M6": {
+      "lineName": "M6 Levent - Boğaziçi Ünv./Hisarüstü Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Levent",
+          "lat": 41.075508,
+          "lng": 29.014527,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Nispetiye",
+          "lat": 41.077311,
+          "lng": 29.024249,
+          "kmFromPrev": 0.84
+        },
+        {
+          "name": "Etiler",
+          "lat": 41.082344,
+          "lng": 29.037541,
+          "kmFromPrev": 1.246
+        },
+        {
+          "name": "Rumeli Hisarüstü",
+          "lat": 41.085351,
+          "lng": 29.045571,
+          "kmFromPrev": 0.751
+        }
+      ]
+    },
+    "M7": {
+      "lineName": "M7 Yıldız - Mahmutbey Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Mahmutbey",
+          "lat": 41.054903,
+          "lng": 28.831501,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Göztepe Mah.",
+          "lat": 41.056837,
+          "lng": 28.848131,
+          "kmFromPrev": 1.412
+        },
+        {
+          "name": "Oruc Reis",
+          "lat": 41.062847,
+          "lng": 28.85538,
+          "kmFromPrev": 0.901
+        },
+        {
+          "name": "Tekstilkent - Giyimkent",
+          "lat": 41.07149,
+          "lng": 28.866978,
+          "kmFromPrev": 1.364
+        },
+        {
+          "name": "Karadeniz Mah.",
+          "lat": 41.08119,
+          "lng": 28.875066,
+          "kmFromPrev": 1.269
+        },
+        {
+          "name": "Yenimahalle",
+          "lat": 41.083855,
+          "lng": 28.892687,
+          "kmFromPrev": 1.508
+        },
+        {
+          "name": "Kazım Karabekir",
+          "lat": 41.085374,
+          "lng": 28.908398,
+          "kmFromPrev": 1.329
+        },
+        {
+          "name": "Yeşilpınar",
+          "lat": 41.082304,
+          "lng": 28.918313,
+          "kmFromPrev": 0.899
+        },
+        {
+          "name": "Veysel Karani - Akşemsettin",
+          "lat": 41.079686,
+          "lng": 28.928102,
+          "kmFromPrev": 0.871
+        },
+        {
+          "name": "Çırçır",
+          "lat": 41.080228,
+          "lng": 28.936225,
+          "kmFromPrev": 0.684
+        },
+        {
+          "name": "Alibeyköy",
+          "lat": 41.079115,
+          "lng": 28.949633,
+          "kmFromPrev": 1.132
+        },
+        {
+          "name": "Nurtepe",
+          "lat": 41.079765,
+          "lng": 28.963542,
+          "kmFromPrev": 1.169
+        },
+        {
+          "name": "Kağıthane",
+          "lat": 41.079564,
+          "lng": 28.973301,
+          "kmFromPrev": 0.819
+        },
+        {
+          "name": "Çağlayan",
+          "lat": 41.070657,
+          "lng": 28.980483,
+          "kmFromPrev": 1.155
+        },
+        {
+          "name": "Mecidiyeköy",
+          "lat": 41.06523,
+          "lng": 28.995391,
+          "kmFromPrev": 1.388
+        },
+        {
+          "name": "Fulya",
+          "lat": 41.061994,
+          "lng": 29.007413,
+          "kmFromPrev": 1.071
+        },
+        {
+          "name": "Yıldız",
+          "lat": 41.05411,
+          "lng": 29.009678,
+          "kmFromPrev": 0.892
+        }
+      ]
+    },
+    "M8": {
+      "lineName": "M8 Bostancı - Dudullu Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Bostancı",
+          "lat": 40.950964,
+          "lng": 29.097723,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Emin Ali Paşa",
+          "lat": 40.960547,
+          "lng": 29.093708,
+          "kmFromPrev": 1.112
+        },
+        {
+          "name": "Ayşe Kadın",
+          "lat": 40.966777,
+          "lng": 29.086718,
+          "kmFromPrev": 0.905
+        },
+        {
+          "name": "Kozyatağı",
+          "lat": 40.977502,
+          "lng": 29.0999,
+          "kmFromPrev": 1.623
+        },
+        {
+          "name": "Küçükbakkalköy",
+          "lat": 40.978918,
+          "lng": 29.111741,
+          "kmFromPrev": 1.007
+        },
+        {
+          "name": "İçerenköy",
+          "lat": 40.978985,
+          "lng": 29.126425,
+          "kmFromPrev": 1.234
+        },
+        {
+          "name": "Kayışdağı",
+          "lat": 40.98469,
+          "lng": 29.137731,
+          "kmFromPrev": 1.14
+        },
+        {
+          "name": "Mevlana",
+          "lat": 40.992156,
+          "lng": 29.153357,
+          "kmFromPrev": 1.551
+        },
+        {
+          "name": "İmes",
+          "lat": 41.000148,
+          "lng": 29.156212,
+          "kmFromPrev": 0.916
+        },
+        {
+          "name": "Modoko - Keyap",
+          "lat": 41.007188,
+          "lng": 29.161855,
+          "kmFromPrev": 0.911
+        },
+        {
+          "name": "Dudullu",
+          "lat": 41.015233,
+          "lng": 29.163287,
+          "kmFromPrev": 0.898
+        },
+        {
+          "name": "Huzur",
+          "lat": 41.022634,
+          "lng": 29.159551,
+          "kmFromPrev": 0.876
+        },
+        {
+          "name": "Parseller",
+          "lat": 41.031243,
+          "lng": 29.152667,
+          "kmFromPrev": 1.114
+        }
+      ]
+    },
+    "M9": {
+      "lineName": "M9 Bahariye - Olimpiyat Metro Hattı",
+      "mode": "Metro",
+      "stations": [
+        {
+          "name": "Bahariye",
+          "lat": 41.058395,
+          "lng": 28.799374,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "İkitelli Sanayi",
+          "lat": 41.07235,
+          "lng": 28.80213,
+          "kmFromPrev": 1.56
+        },
+        {
+          "name": "Ziya Gökalp Mahallesi",
+          "lat": 41.074482,
+          "lng": 28.78653,
+          "kmFromPrev": 1.33
+        },
+        {
+          "name": "Olimpiyat",
+          "lat": 41.079466,
+          "lng": 28.767234,
+          "kmFromPrev": 1.71
+        }
+      ]
+    },
+    "T1": {
+      "lineName": "T1 Kabataş - Bağcılar Tramvay Hattı",
+      "mode": "Tramvay",
+      "stations": [
+        {
+          "name": "Bağcılar",
+          "lat": 41.033085,
+          "lng": 28.860651,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Güneştepe",
+          "lat": 41.028993,
+          "lng": 28.860954,
+          "kmFromPrev": 0.453
+        },
+        {
+          "name": "Yavuz Selim Camii",
+          "lat": 41.02382,
+          "lng": 28.863656,
+          "kmFromPrev": 0.615
+        },
+        {
+          "name": "Soğanlı",
+          "lat": 41.020967,
+          "lng": 28.867084,
+          "kmFromPrev": 0.427
+        },
+        {
+          "name": "Akıncılar",
+          "lat": 41.017335,
+          "lng": 28.871035,
+          "kmFromPrev": 0.521
+        },
+        {
+          "name": "Güngören",
+          "lat": 41.015209,
+          "lng": 28.877513,
+          "kmFromPrev": 0.593
+        },
+        {
+          "name": "Merter Tekstil Merkezi",
+          "lat": 41.011558,
+          "lng": 28.880759,
+          "kmFromPrev": 0.487
+        },
+        {
+          "name": "Mehmet Akif",
+          "lat": 41.0058,
+          "lng": 28.881681,
+          "kmFromPrev": 0.641
+        },
+        {
+          "name": "Zeytinburnu",
+          "lat": 41.001484,
+          "lng": 28.890296,
+          "kmFromPrev": 0.867
+        },
+        {
+          "name": "Akşemsettin",
+          "lat": 41.004213,
+          "lng": 28.907517,
+          "kmFromPrev": 1.478
+        },
+        {
+          "name": "Seyitnizam",
+          "lat": 41.007844,
+          "lng": 28.909346,
+          "kmFromPrev": 0.43
+        },
+        {
+          "name": "Merkezefendi",
+          "lat": 41.01039,
+          "lng": 28.909505,
+          "kmFromPrev": 0.282
+        },
+        {
+          "name": "Cevizlibağ",
+          "lat": 41.015954,
+          "lng": 28.911578,
+          "kmFromPrev": 0.639
+        },
+        {
+          "name": "Topkapı",
+          "lat": 41.019228,
+          "lng": 28.919451,
+          "kmFromPrev": 0.754
+        },
+        {
+          "name": "Pazartekke",
+          "lat": 41.018264,
+          "lng": 28.927157,
+          "kmFromPrev": 0.656
+        },
+        {
+          "name": "Çapa",
+          "lat": 41.015882,
+          "lng": 28.932031,
+          "kmFromPrev": 0.487
+        },
+        {
+          "name": "Fındıkzade",
+          "lat": 41.012355,
+          "lng": 28.939149,
+          "kmFromPrev": 0.714
+        },
+        {
+          "name": "Haseki",
+          "lat": 41.010708,
+          "lng": 28.944297,
+          "kmFromPrev": 0.469
+        },
+        {
+          "name": "Yusufpaşa",
+          "lat": 41.009997,
+          "lng": 28.947121,
+          "kmFromPrev": 0.25
+        },
+        {
+          "name": "Aksaray",
+          "lat": 41.009592,
+          "lng": 28.953864,
+          "kmFromPrev": 0.568
+        },
+        {
+          "name": "Üniversite-Laleli",
+          "lat": 41.009585,
+          "lng": 28.95979,
+          "kmFromPrev": 0.498
+        },
+        {
+          "name": "Beyazıt",
+          "lat": 41.009067,
+          "lng": 28.966698,
+          "kmFromPrev": 0.583
+        },
+        {
+          "name": "Çemberlitaş",
+          "lat": 41.008435,
+          "lng": 28.97113,
+          "kmFromPrev": 0.379
+        },
+        {
+          "name": "Sultanahmet",
+          "lat": 41.008087,
+          "lng": 28.975587,
+          "kmFromPrev": 0.376
+        },
+        {
+          "name": "Gülhane",
+          "lat": 41.012163,
+          "lng": 28.978424,
+          "kmFromPrev": 0.51
+        },
+        {
+          "name": "Sirkeci",
+          "lat": 41.015179,
+          "lng": 28.975894,
+          "kmFromPrev": 0.395
+        },
+        {
+          "name": "Eminönü",
+          "lat": 41.017475,
+          "lng": 28.973214,
+          "kmFromPrev": 0.339
+        },
+        {
+          "name": "Karaköy",
+          "lat": 41.022115,
+          "lng": 28.974688,
+          "kmFromPrev": 0.528
+        },
+        {
+          "name": "Tophane",
+          "lat": 41.026991,
+          "lng": 28.980867,
+          "kmFromPrev": 0.748
+        },
+        {
+          "name": "Fındıklı",
+          "lat": 41.031453,
+          "lng": 28.989442,
+          "kmFromPrev": 0.873
+        },
+        {
+          "name": "Kabataş",
+          "lat": 41.03426,
+          "lng": 28.99252,
+          "kmFromPrev": 0.404
+        }
+      ]
+    },
+    "T3": {
+      "lineName": "T3 Kadıköy - Moda Nostaljik Tramvay Hattı",
+      "mode": "Tramvay",
+      "stations": [
+        {
+          "name": "Altıyol",
+          "lat": 40.989791,
+          "lng": 29.028938,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Bahariye",
+          "lat": 40.987869,
+          "lng": 29.028526,
+          "kmFromPrev": 0.215
+        },
+        {
+          "name": "Kilise",
+          "lat": 40.984886,
+          "lng": 29.027596,
+          "kmFromPrev": 0.339
+        },
+        {
+          "name": "Moda İlkokulu",
+          "lat": 40.984091,
+          "lng": 29.026735,
+          "kmFromPrev": 0.114
+        },
+        {
+          "name": "Moda",
+          "lat": 40.984062,
+          "lng": 29.024408,
+          "kmFromPrev": 0.196
+        },
+        {
+          "name": "Mühürdar",
+          "lat": 40.985181,
+          "lng": 29.021327,
+          "kmFromPrev": 0.287
+        },
+        {
+          "name": "Damga Sk.",
+          "lat": 40.988433,
+          "lng": 29.020752,
+          "kmFromPrev": 0.363
+        },
+        {
+          "name": "İDO",
+          "lat": 40.98991,
+          "lng": 29.020771,
+          "kmFromPrev": 0.163
+        },
+        {
+          "name": "İskele",
+          "lat": 40.990876,
+          "lng": 29.023484,
+          "kmFromPrev": 0.252
+        },
+        {
+          "name": "Çarşı",
+          "lat": 40.99109,
+          "lng": 29.025473,
+          "kmFromPrev": 0.169
+        }
+      ]
+    },
+    "T4": {
+      "lineName": "T4 Topkapı - Mescid-i Selam Tramvay Hattı",
+      "mode": "Tramvay",
+      "stations": [
+        {
+          "name": "Fetihkapı",
+          "lat": 41.021823,
+          "lng": 28.925338,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Vatan",
+          "lat": 41.025693,
+          "lng": 28.92936,
+          "kmFromPrev": 0.545
+        },
+        {
+          "name": "Edirnekapı",
+          "lat": 41.031439,
+          "lng": 28.933975,
+          "kmFromPrev": 0.744
+        },
+        {
+          "name": "Şehitlik",
+          "lat": 41.034181,
+          "lng": 28.928257,
+          "kmFromPrev": 0.568
+        },
+        {
+          "name": "Demirkapı",
+          "lat": 41.037006,
+          "lng": 28.923378,
+          "kmFromPrev": 0.515
+        },
+        {
+          "name": "Topçular",
+          "lat": 41.041619,
+          "lng": 28.919538,
+          "kmFromPrev": 0.603
+        },
+        {
+          "name": "Rami",
+          "lat": 41.046642,
+          "lng": 28.915525,
+          "kmFromPrev": 0.65
+        },
+        {
+          "name": "Uluyol-Bereç",
+          "lat": 41.054136,
+          "lng": 28.91025,
+          "kmFromPrev": 0.94
+        },
+        {
+          "name": "Sağmalcılar-Pancar Motor",
+          "lat": 41.05728,
+          "lng": 28.90694,
+          "kmFromPrev": 0.445
+        },
+        {
+          "name": "Bosna Çukurçeşme",
+          "lat": 41.061836,
+          "lng": 28.902084,
+          "kmFromPrev": 0.648
+        },
+        {
+          "name": "Ali Fuat Başgil",
+          "lat": 41.068564,
+          "lng": 28.895482,
+          "kmFromPrev": 0.928
+        },
+        {
+          "name": "Taşköprü",
+          "lat": 41.072656,
+          "lng": 28.887652,
+          "kmFromPrev": 0.798
+        },
+        {
+          "name": "Karadeniz",
+          "lat": 41.075297,
+          "lng": 28.88224,
+          "kmFromPrev": 0.54
+        },
+        {
+          "name": "Metris",
+          "lat": 41.080228,
+          "lng": 28.875623,
+          "kmFromPrev": 0.778
+        },
+        {
+          "name": "Cumhuriyet Mah.",
+          "lat": 41.084153,
+          "lng": 28.871987,
+          "kmFromPrev": 0.53
+        },
+        {
+          "name": "50.Yıl",
+          "lat": 41.087908,
+          "lng": 28.866765,
+          "kmFromPrev": 0.604
+        },
+        {
+          "name": "Hacı Şükrü",
+          "lat": 41.092832,
+          "lng": 28.864009,
+          "kmFromPrev": 0.592
+        },
+        {
+          "name": "Yenimahalle",
+          "lat": 41.099827,
+          "lng": 28.862977,
+          "kmFromPrev": 0.778
+        },
+        {
+          "name": "Sultançifliği",
+          "lat": 41.106181,
+          "lng": 28.860606,
+          "kmFromPrev": 0.73
+        },
+        {
+          "name": "Cebeci",
+          "lat": 41.11192,
+          "lng": 28.857811,
+          "kmFromPrev": 0.676
+        },
+        {
+          "name": "Mescid-i Selam",
+          "lat": 41.116214,
+          "lng": 28.851263,
+          "kmFromPrev": 0.726
+        },
+        {
+          "name": "Habibler",
+          "lat": 41.122458,
+          "lng": 28.843797,
+          "kmFromPrev": 0.932
+        }
+      ]
+    },
+    "T5": {
+      "lineName": "T5 Eminönü - Alibeyköy Cep Otogarı Tramvay Hattı",
+      "mode": "Tramvay",
+      "stations": [
+        {
+          "name": "Alibeyköy Metro",
+          "lat": 41.078458,
+          "lng": 28.949447,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Alibeyköy Merkez",
+          "lat": 41.073769,
+          "lng": 28.94606,
+          "kmFromPrev": 0.591
+        },
+        {
+          "name": "Üniversite",
+          "lat": 41.069801,
+          "lng": 28.942848,
+          "kmFromPrev": 0.515
+        },
+        {
+          "name": "Silahtarağa Mahallesi",
+          "lat": 41.064777,
+          "lng": 28.942894,
+          "kmFromPrev": 0.556
+        },
+        {
+          "name": "Eyüpsultan Devlet Hastanesi",
+          "lat": 41.05673,
+          "lng": 28.941119,
+          "kmFromPrev": 0.902
+        },
+        {
+          "name": "Eyüpsultan Teleferik",
+          "lat": 41.050471,
+          "lng": 28.935166,
+          "kmFromPrev": 0.854
+        },
+        {
+          "name": "Feshane",
+          "lat": 41.045517,
+          "lng": 28.93796,
+          "kmFromPrev": 0.596
+        },
+        {
+          "name": "Ayvansaray",
+          "lat": 41.039562,
+          "lng": 28.943949,
+          "kmFromPrev": 0.828
+        },
+        {
+          "name": "Balat",
+          "lat": 41.034056,
+          "lng": 28.948037,
+          "kmFromPrev": 0.699
+        },
+        {
+          "name": "Fener",
+          "lat": 41.028625,
+          "lng": 28.954462,
+          "kmFromPrev": 0.807
+        },
+        {
+          "name": "Cibali",
+          "lat": 41.024238,
+          "lng": 28.96031,
+          "kmFromPrev": 0.69
+        },
+        {
+          "name": "Küçükpazar",
+          "lat": 41.020908,
+          "lng": 28.963307,
+          "kmFromPrev": 0.446
+        },
+        {
+          "name": "Eminönü",
+          "lat": 41.018251,
+          "lng": 28.97005,
+          "kmFromPrev": 0.638
+        }
+      ]
+    },
+    "TF1": {
+      "lineName": "TF1 Maçka - Taşkışla Teleferik Hattı",
+      "mode": "Teleferik",
+      "stations": [
+        {
+          "name": "Maçka",
+          "lat": 41.044737,
+          "lng": 28.99395,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Taşkışla",
+          "lat": 41.043632,
+          "lng": 28.990573,
+          "kmFromPrev": 0.309
+        }
+      ]
+    },
+    "TF2": {
+      "lineName": "TF2 Eyüp - Pier Loti Teleferik Hattı",
+      "mode": "Teleferik",
+      "stations": [
+        {
+          "name": "Eyüp",
+          "lat": 41.050015,
+          "lng": 28.934068,
+          "kmFromPrev": 0.0
+        },
+        {
+          "name": "Pier Loti",
+          "lat": 41.054035,
+          "lng": 28.93298,
+          "kmFromPrev": 0.454
+        }
+      ]
+    }
+  }
+}
