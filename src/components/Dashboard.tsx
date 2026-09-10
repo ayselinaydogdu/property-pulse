@@ -188,6 +188,11 @@ export default function Dashboard({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [metric, setMetric] = useState<MapMetric>("rent");
+  // Katkı sayaçları: "form hazır ama veri yok" ile "veri hiç toplanmıyor" ayrışsın
+  const [contribTotals, setContribTotals] = useState<{
+    rentContributions: number;
+    priceContributions: number;
+  } | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -229,6 +234,13 @@ export default function Dashboard({
       controller.abort();
     };
   }, [input]);
+
+  useEffect(() => {
+    fetch("/api/contributions")
+      .then((r) => r.json())
+      .then((d) => setContribTotals(d.totals ?? null))
+      .catch(() => setContribTotals(null));
+  }, [selectedSlug]);
 
   // Panel açıkken Esc kapatsın
   useEffect(() => {
@@ -783,11 +795,59 @@ export default function Dashboard({
                 </div>
               </li>
             )}
+            <li className="flex items-start gap-2">
+              <span
+                aria-hidden
+                style={{
+                  color:
+                    (contribTotals?.priceContributions ?? 0) > 0
+                      ? "var(--status-good)"
+                      : "var(--status-warning)",
+                }}
+              >
+                ◐
+              </span>
+              <div>
+                <div className="font-medium">
+                  Günlük harcamalar (kahve, market, hizmet)
+                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
+                    toplanıyor · {contribTotals?.priceContributions ?? 0} fiyat katkısı
+                  </span>
+                </div>
+                <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                  İlçe kırılımında yayınlanmış veri yok, tek yol kullanıcı katkısı.{" "}
+                  <b>Form hazır ve çalışıyor</b> - bir ilçe seç, panelin altından kendi
+                  fiyatlarını gir. Katkı geldikçe bu satır dolacak.
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start gap-2">
+              <span
+                aria-hidden
+                style={{
+                  color:
+                    (contribTotals?.rentContributions ?? 0) > 0
+                      ? "var(--status-good)"
+                      : "var(--status-warning)",
+                }}
+              >
+                ◐
+              </span>
+              <div>
+                <div className="font-medium">
+                  Kullanıcı kira katkıları
+                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
+                    {contribTotals?.rentContributions ?? 0} kayıt
+                  </span>
+                </div>
+                <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                  Bir ilçe 20 kaydı geçince kirası yayınlanmış ortalama yerine kendi
+                  kayıtlarımızın medyanından hesaplanmaya başlar; aykırı değerler IQR
+                  filtresiyle elenir.
+                </p>
+              </div>
+            </li>
             {[
-              {
-                name: "Günlük harcamalar (kahve, market, hizmet)",
-                note: "İlçe kırılımında yayınlanmış veri yok. Toplama başladı: bir ilçe seç, panelden kendi fiyatlarını gir.",
-              },
               {
                 name: "İşe gidiş süresi",
                 note: "İstasyon konumları bağlandı; kapı-kapı süre hesabı için rota motoru gerekiyor. Sıradaki iş.",
