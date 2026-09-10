@@ -46,6 +46,14 @@ type StationFile = {
   }[];
 };
 
+type BusServiceFile = {
+  _meta: { source: string; sourceUrl: string; method: SourceMethod; retrievedAt: string };
+  districts: Record<
+    string,
+    { stops: number; lines: number; weekdayDepartures: number; departuresPerStop: number }
+  >;
+};
+
 type BenchmarkFile = {
   sources: {
     key: string;
@@ -176,6 +184,29 @@ async function main() {
       `(${existing} mevcut, ${stationRows.length - existing} inşaat halinde` +
       `${unmatched > 0 ? `, ${unmatched} tanesi hiçbir ilçe sınırına düşmedi` : ""})`,
   );
+
+  // --- Otobüs hizmet yoğunluğu ---
+  const busFile = readJson<BusServiceFile>("data", "bus-service.json");
+  const busObservedAt = new Date(busFile._meta.retrievedAt);
+  let busCount = 0;
+  for (const [slug, v] of Object.entries(busFile.districts)) {
+    const neighborhoodId = idBySlug.get(slug);
+    if (!neighborhoodId) throw new Error(`bus-service.json bilinmeyen ilçe: ${slug}`);
+    await prisma.busService.upsert({
+      where: { neighborhoodId },
+      update: { ...v, method: busFile._meta.method, source: busFile._meta.source, sourceUrl: busFile._meta.sourceUrl, observedAt: busObservedAt },
+      create: {
+        neighborhoodId,
+        ...v,
+        method: busFile._meta.method,
+        source: busFile._meta.source,
+        sourceUrl: busFile._meta.sourceUrl,
+        observedAt: busObservedAt,
+      },
+    });
+    busCount++;
+  }
+  console.log(`${busCount} ilçe için otobüs hizmet verisi yüklendi`);
 
   const listings = await prisma.propertyListing.count();
   const priceEntries = await prisma.priceEntry.count();

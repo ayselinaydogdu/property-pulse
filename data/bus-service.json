@@ -1,0 +1,253 @@
+{
+  "_meta": {
+    "description": "İlçe bazlı otobüs hizmet yoğunluğu (hafta içi). Metrobüs DAHİL DEĞİL - hızlı ulaşım katmanında sayılıyor.",
+    "source": "İBB Açık Veri - IETT GTFS Data",
+    "sourceUrl": "https://data.ibb.gov.tr/dataset/iett-gtfs-verisi",
+    "method": "DERIVED",
+    "publishedAt": "2026-04-21",
+    "retrievedAt": "2026-09-10",
+    "producedBy": "scripts/build_bus_service.py",
+    "caveats": [
+      "departuresPerStop, ortalama bir durağa hafta içi günde uğrayan otobüs sayısıdır; ilçe büyüklüğünden bağımsızdır.",
+      "Çok hatlı aktarma durakları bu sayıyı yukarı çeker.",
+      "Sefer sıklığı, otobüsün gitmek istediğin yere gidip gitmediğini ölçmez.",
+      "Koordinatlar kaynakta bozuk geliyor, onarılıp İstanbul sınır kutusuyla doğrulandı."
+    ]
+  },
+  "districts": {
+    "adalar": {
+      "stops": 98,
+      "lines": 25,
+      "weekdayDepartures": 19519,
+      "departuresPerStop": 199.2
+    },
+    "arnavutkoy": {
+      "stops": 577,
+      "lines": 129,
+      "weekdayDepartures": 51455,
+      "departuresPerStop": 89.2
+    },
+    "atasehir": {
+      "stops": 414,
+      "lines": 299,
+      "weekdayDepartures": 92920,
+      "departuresPerStop": 224.4
+    },
+    "avcilar": {
+      "stops": 208,
+      "lines": 160,
+      "weekdayDepartures": 49521,
+      "departuresPerStop": 238.1
+    },
+    "bagcilar": {
+      "stops": 256,
+      "lines": 229,
+      "weekdayDepartures": 42197,
+      "departuresPerStop": 164.8
+    },
+    "bahcelievler": {
+      "stops": 198,
+      "lines": 200,
+      "weekdayDepartures": 30334,
+      "departuresPerStop": 153.2
+    },
+    "bakirkoy": {
+      "stops": 168,
+      "lines": 236,
+      "weekdayDepartures": 31717,
+      "departuresPerStop": 188.8
+    },
+    "basaksehir": {
+      "stops": 649,
+      "lines": 294,
+      "weekdayDepartures": 116279,
+      "departuresPerStop": 179.2
+    },
+    "bayrampasa": {
+      "stops": 112,
+      "lines": 111,
+      "weekdayDepartures": 15274,
+      "departuresPerStop": 136.4
+    },
+    "besiktas": {
+      "stops": 244,
+      "lines": 255,
+      "weekdayDepartures": 52877,
+      "departuresPerStop": 216.7
+    },
+    "beykoz": {
+      "stops": 1008,
+      "lines": 269,
+      "weekdayDepartures": 83149,
+      "departuresPerStop": 82.5
+    },
+    "beylikduzu": {
+      "stops": 352,
+      "lines": 102,
+      "weekdayDepartures": 37699,
+      "departuresPerStop": 107.1
+    },
+    "beyoglu": {
+      "stops": 143,
+      "lines": 373,
+      "weekdayDepartures": 52227,
+      "departuresPerStop": 365.2
+    },
+    "buyukcekmece": {
+      "stops": 360,
+      "lines": 124,
+      "weekdayDepartures": 53496,
+      "departuresPerStop": 148.6
+    },
+    "catalca": {
+      "stops": 269,
+      "lines": 24,
+      "weekdayDepartures": 11626,
+      "departuresPerStop": 43.2
+    },
+    "cekmekoy": {
+      "stops": 351,
+      "lines": 168,
+      "weekdayDepartures": 39898,
+      "departuresPerStop": 113.7
+    },
+    "esenler": {
+      "stops": 143,
+      "lines": 210,
+      "weekdayDepartures": 22404,
+      "departuresPerStop": 156.7
+    },
+    "esenyurt": {
+      "stops": 397,
+      "lines": 169,
+      "weekdayDepartures": 64680,
+      "departuresPerStop": 162.9
+    },
+    "eyupsultan": {
+      "stops": 521,
+      "lines": 391,
+      "weekdayDepartures": 99421,
+      "departuresPerStop": 190.8
+    },
+    "fatih": {
+      "stops": 171,
+      "lines": 350,
+      "weekdayDepartures": 77743,
+      "departuresPerStop": 454.6
+    },
+    "gaziosmanpasa": {
+      "stops": 195,
+      "lines": 135,
+      "weekdayDepartures": 30063,
+      "departuresPerStop": 154.2
+    },
+    "gungoren": {
+      "stops": 113,
+      "lines": 102,
+      "weekdayDepartures": 10137,
+      "departuresPerStop": 89.7
+    },
+    "kadikoy": {
+      "stops": 278,
+      "lines": 323,
+      "weekdayDepartures": 75254,
+      "departuresPerStop": 270.7
+    },
+    "kagithane": {
+      "stops": 266,
+      "lines": 203,
+      "weekdayDepartures": 46509,
+      "departuresPerStop": 174.8
+    },
+    "kartal": {
+      "stops": 435,
+      "lines": 216,
+      "weekdayDepartures": 66785,
+      "departuresPerStop": 153.5
+    },
+    "kucukcekmece": {
+      "stops": 423,
+      "lines": 204,
+      "weekdayDepartures": 75879,
+      "departuresPerStop": 179.4
+    },
+    "maltepe": {
+      "stops": 432,
+      "lines": 207,
+      "weekdayDepartures": 60150,
+      "departuresPerStop": 139.2
+    },
+    "pendik": {
+      "stops": 774,
+      "lines": 274,
+      "weekdayDepartures": 108432,
+      "departuresPerStop": 140.1
+    },
+    "sancaktepe": {
+      "stops": 381,
+      "lines": 300,
+      "weekdayDepartures": 86913,
+      "departuresPerStop": 228.1
+    },
+    "sariyer": {
+      "stops": 764,
+      "lines": 225,
+      "weekdayDepartures": 98312,
+      "departuresPerStop": 128.7
+    },
+    "sile": {
+      "stops": 294,
+      "lines": 21,
+      "weekdayDepartures": 2672,
+      "departuresPerStop": 9.1
+    },
+    "silivri": {
+      "stops": 258,
+      "lines": 31,
+      "weekdayDepartures": 14787,
+      "departuresPerStop": 57.3
+    },
+    "sisli": {
+      "stops": 178,
+      "lines": 447,
+      "weekdayDepartures": 56484,
+      "departuresPerStop": 317.3
+    },
+    "sultanbeyli": {
+      "stops": 343,
+      "lines": 132,
+      "weekdayDepartures": 59055,
+      "departuresPerStop": 172.2
+    },
+    "sultangazi": {
+      "stops": 218,
+      "lines": 172,
+      "weekdayDepartures": 48252,
+      "departuresPerStop": 221.3
+    },
+    "tuzla": {
+      "stops": 505,
+      "lines": 111,
+      "weekdayDepartures": 54069,
+      "departuresPerStop": 107.1
+    },
+    "umraniye": {
+      "stops": 647,
+      "lines": 401,
+      "weekdayDepartures": 110372,
+      "departuresPerStop": 170.6
+    },
+    "uskudar": {
+      "stops": 577,
+      "lines": 427,
+      "weekdayDepartures": 110021,
+      "departuresPerStop": 190.7
+    },
+    "zeytinburnu": {
+      "stops": 116,
+      "lines": 178,
+      "weekdayDepartures": 26672,
+      "departuresPerStop": 229.9
+    }
+  }
+}

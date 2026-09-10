@@ -310,8 +310,7 @@ export default function Dashboard({
         >
           <div className="mb-3 flex flex-wrap gap-1.5">
             {(Object.keys(METRIC_LABELS) as MapMetric[]).map((key) => {
-              const disabled =
-                (key === "cost" || key === "total") && !hasCostData;
+              const disabled = (key === "cost" || key === "total") && !hasCostData;
               return (
                 <button
                   key={key}
@@ -332,6 +331,13 @@ export default function Dashboard({
               );
             })}
           </div>
+          {!hasCostData && (
+            <p className="mb-3" style={{ color: "var(--text-muted)" }}>
+              <b>Yaşam maliyeti</b> ve <b>Toplam aylık</b> katmanları kapalı: ilçe bazlı
+              günlük harcama verisi için bağlanmış bir kaynak yok. Boş harita göstermek
+              yerine kapalı duruyorlar.
+            </p>
+          )}
           <MapPanel
             rows={rows}
             metric={metric}
@@ -613,6 +619,48 @@ export default function Dashboard({
               </section>
             )}
 
+            {selected.bus && (
+              <section className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <h3 className="font-semibold">
+                  Otobüs
+                  <span className="ml-2 font-normal" style={{ color: "var(--text-secondary)" }}>
+                    39 ilçe içinde sıklıkta {selected.bus.rank}. sırada
+                  </span>
+                </h3>
+                <dl className="mt-2 space-y-1.5">
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>
+                      Bir durağa günde uğrayan otobüs
+                    </dt>
+                    <dd className="tabular font-medium">
+                      {selected.bus.departuresPerStop}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>Durak sayısı</dt>
+                    <dd className="tabular font-medium">{selected.bus.stops}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>Hizmet veren hat</dt>
+                    <dd className="tabular font-medium">{selected.bus.lines}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt style={{ color: "var(--text-muted)" }}>Hafta içi günlük kalkış</dt>
+                    <dd className="tabular font-medium">
+                      {selected.bus.weekdayDepartures.toLocaleString("tr-TR")}
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-2" style={{ color: "var(--text-muted)" }}>
+                  Durak sayısı ilçeleri ayırmaz - her ilçede otobüs durağı var. Ayırt eden
+                  şey sıklık. Metrobüs bu sayılara dahil değil, yukarıda ayrı sayılıyor.
+                </p>
+                <p className="mt-2">
+                  <SourceNote sources={[selected.bus.provenance]} />
+                </p>
+              </section>
+            )}
+
             {selected.missing.length > 0 && (
               <p className="mt-5" style={{ color: "var(--text-muted)" }}>
                 Eksik veri: {selected.missing.join(", ")}
@@ -667,6 +715,22 @@ export default function Dashboard({
                     otobüs durakları dahil değil: her ilçede var, ilçeleri ayırmıyor.
                     İnşaat halindeki istasyonlar sayılmıyor. Uzaklık ilçe merkezinden kuş
                     uçuşudur - yürüme mesafesi değildir.
+                  </p>
+                </div>
+              </li>
+            )}
+            {rows[0]?.bus && (
+              <li className="flex items-start gap-2">
+                <span aria-hidden style={{ color: "var(--status-good)" }}>
+                  ●
+                </span>
+                <div>
+                  <div className="font-medium">Otobüs hizmet yoğunluğu · 39 ilçe</div>
+                  <SourceNote sources={[rows[0].bus.provenance]} />
+                  <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                    Hafta içi sefer verisinden hesaplandı. Durak sayısı değil{" "}
+                    <b>sıklık</b> ölçülüyor: Fatih&apos;te bir durağa günde ~455 otobüs
+                    uğrarken Şile&apos;de ~9. Metrobüs hariç.
                   </p>
                 </div>
               </li>

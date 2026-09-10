@@ -14,13 +14,16 @@ const RAMP = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"];
 function metricValue(row: AffordabilityRow, metric: MapMetric): number | null {
   if (metric === "rent") return row.estimatedRent;
   if (metric === "transit") return row.transit?.nearestStationKm ?? null;
+  if (metric === "bus") return row.bus?.departuresPerStop ?? null;
   if (metric === "cost") return row.estimatedCost;
   return row.knownMonthly;
 }
 
 /** Ölçek etiketi metriğe göre değişir: kira ₺, uzaklık km. */
 function formatMetric(value: number, metric: MapMetric): string {
-  return metric === "transit" ? formatKm(value) : formatTRY(value);
+  if (metric === "transit") return formatKm(value);
+  if (metric === "bus") return `${value}/gün`;
+  return formatTRY(value);
 }
 
 /** Değeri min-max aralığında rampanın bir adımına eşler. */
@@ -41,6 +44,11 @@ function popupHtml(row: AffordabilityRow): string {
      <div>Yaşam maliyeti: <b>${
        row.estimatedCost !== null ? formatTRY(row.estimatedCost) : "veri yok"
      }</b></div>
+     ${
+       row.bus
+         ? `<div>Otobüs: <b>${row.bus.departuresPerStop}/gün</b> (durak başına)</div>`
+         : ""
+     }
      ${
        row.transit
          ? `<div style="margin-top:4px">Raylı sistem: <b>${

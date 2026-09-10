@@ -35,6 +35,7 @@ npm run dev                   # http://localhost:3000
 | İlçe sınırları (harita çokgenleri) | Bağlı | Aynı Overpass sorgusu, `out geom`; Douglas-Peucker ile ~65 m toleransla sadeleştirildi (42.171 → 4.916 nokta, 96 KB) |
 | Raylı sistem istasyonları | **Bağlı** - 343 istasyon (268 mevcut, 75 inşaatta) | [İBB Açık Veri - Raylı Sistem İstasyon Noktaları](https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi), 05.06.2025 |
 | Metrobüs istasyonları | **Bağlı** - 46 istasyon | [İBB Açık Veri - IETT GTFS](https://data.ibb.gov.tr/dataset/iett-gtfs-verisi), 21.04.2026 |
+| Otobüs hizmet yoğunluğu | **Bağlı** - 39 ilçe | Aynı GTFS'ten hesaplandı (`scripts/build_bus_service.py`) |
 | Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
 | İşe gidiş süresi (kapı-kapı) | **Yok** | İstasyon konumları bağlandı, süre hesabı için rota motoru gerekiyor |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
@@ -45,7 +46,8 @@ npm run dev                   # http://localhost:3000
 - **İnşaat halindeki 75 istasyon ayrı tutuluyor** (`stage` alanı). Bugün erişim sağlamadıkları için erişim hesabına katılmıyorlar, ama veri korunuyor.
 - İstasyonun hangi ilçeye düştüğü **nokta-poligon testiyle** (ray casting) hesaplanıyor. Mevcut 268 istasyonun 6'sı hiçbir ilçeye düşmüyor ve bu doğru: 5'i Kocaeli'nde (Marmaray Gebze'ye kadar gidiyor), Haliç ise metro köprüsünün üstünde, karada değil.
 - **"En yakın istasyon" kuş uçuşu mesafedir** ve ilçe merkezinden ölçülür. Yürüme mesafesi değildir; gerçek erişim bundan zordur. Arayüzde bu not düşülüyor. (Bu yüzden Esenyurt gibi ilçelerde "5 istasyon var ama en yakını 4,1 km" görülebilir: metrobüs koridoru ilçenin güney kenarından geçiyor, merkezinden değil.)
-- **Metrobüs neden dahil, sıradan otobüs neden değil?** Metrobüs teknik olarak otobüstür ama ayrılmış yolda, yüksek sıklıkta, sabit istasyonlarla çalışır - erişim açısından raylı sisteme denktir. Sıradan otobüs durakları dahil edilmedi çünkü **İstanbul'un her ilçesinde otobüs durağı var**; saymak ilçeleri birbirinden ayırmaz, sadece gürültü ekler. Otobüsün asıl değeri durak sayısında değil, rota hesabındadır - o da sıradaki iş.
+- **Metrobüs neden hızlı ulaşımda?** Teknik olarak otobüstür ama ayrılmış yolda, yüksek sıklıkta, sabit istasyonlarla çalışır - erişim açısından raylı sisteme denktir.
+- **Otobüste durak değil sıklık ölçülüyor.** İstanbul'un her ilçesinde otobüs durağı var; durak saymak ilçeleri ayırmaz. Ayırt eden şey sıklık - ve fark büyük: Fatih'te ortalama bir durağa hafta içi günde **454,6** otobüs uğrarken Şile'de **9,1**. Üstelik Şile'nin durağı daha çok (294 vs 171); durak saymanın neden yanıltıcı olduğunun kanıtı. `departuresPerStop` ilçe büyüklüğünden bağımsızdır. Sınırları: çok hatlı aktarma durakları sayıyı yukarı çeker ve sıklık, otobüsün *gitmek istediğin yere* gidip gitmediğini ölçmez.
 - **Metrobüs verisi bir hatayı düzeltti.** Sadece raylı sistem varken Avcılar, Esenyurt, Büyükçekmece ve Beylikdüzü "hızlı ulaşım yok" görünüyordu - dördü de metrobüs koridorunda ve dördü de aracın "en ucuz" diye önerdiği batı ilçeleri. Hızlı ulaşımı olmayan ilçe sayısı 11'den 7'ye indi.
 - Metrobüs durakları [İETT GTFS](https://data.ibb.gov.tr/dataset/iett-gtfs-verisi)'inden `routes` → `trips` → `stop_times` → `stops` zinciriyle çıkarıldı (34 hat ailesi: 34, 34A, 34AS, 34B, 34BZ, 34C, 34G, 34T, 34U, 34Z). Kaynaktaki koordinatlar **bozuk geliyor** (`stop_lat = 410.191.700.005.564` - Türkçe sayı biçimlendirmesi ondalığı binlik ayracına çevirmiş); rakamlar birleştirilip ondalık geri konuldu ve İstanbul sınır kutusuyla doğrulandı. Gidiş-dönüş için ayrı kayıtlı 90 durak, ada göre 46 istasyona indirildi.
 - **Sınır sadeleştirmesinin bedeli:** 314 mevcut istasyonun 9'u hiçbir ilçeye düşmüyor. 6'sı doğru (5 Kocaeli'nde, Haliç metro köprüsünde), 2'si ~65 m'lik sadeleştirme toleransı yüzünden sınırın hemen dışına düşen sınır komşusu durak, 1'i belirsiz. Hiçbiri bir ilçenin sonucunu değiştirmiyor.
@@ -109,6 +111,7 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
+- [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
 - [x] **İlçe detay paneli** - satıra/haritaya/çubuğa tıklayınca sağdan açılır; kira özeti ve hızlı ulaşım hat hat: hattın kodu, türü (metro/tramvay/banliyö/metrobüs), adı, o ilçedeki istasyonları ve hattın İstanbul genelindeki toplam istasyon sayısı
 
 ### Sıradaki
@@ -136,6 +139,8 @@ data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
   rent-benchmarks.json    İlçe bazlı m² kira, kaynağı ve tarihiyle
   district-boundaries.json  Harita çokgenleri
   transit-stations.json   389 istasyon (raylı sistem + metrobüs), kaynak bazlı
+  bus-service.json        39 ilçe için otobüs hizmet yoğunluğu
+scripts/build_bus_service.py  GTFS'ten ilçe bazlı otobüs sıklığı üretir
 prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi

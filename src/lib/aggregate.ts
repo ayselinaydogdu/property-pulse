@@ -103,6 +103,17 @@ export type TransitAccess = {
   provenance: Provenance;
 };
 
+export type BusAccess = {
+  stops: number;
+  lines: number;
+  weekdayDepartures: number;
+  /** Ortalama bir durağa hafta içi günde uğrayan otobüs - ilçe büyüklüğünden bağımsız */
+  departuresPerStop: number;
+  /** 39 ilçe içindeki sırası (1 = en sık) */
+  rank: number;
+  provenance: Provenance;
+};
+
 export type NeighborhoodStats = {
   slug: string;
   name: string;
@@ -116,8 +127,10 @@ export type NeighborhoodStats = {
   rent: RentEstimate | null;
   /** Yaşam maliyeti verisi yoksa null - sıfır DEĞİL */
   cost: CostEstimate | null;
-  /** Raylı sistem erişimi; istasyon verisi yoksa null */
+  /** Raylı sistem + metrobüs erişimi; istasyon verisi yoksa null */
   transit: TransitAccess | null;
+  /** Otobüs hizmet yoğunluğu; veri yoksa null */
+  bus: BusAccess | null;
   /** Hangi verilerin eksik olduğu, arayüzde dürüstçe gösterilmek üzere */
   missing: string[];
 };
@@ -147,6 +160,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       listings: { where: { type: "RENT" } },
       benchmarks: { orderBy: { retrievedAt: "desc" } },
       stations: true,
+      busService: true,
       priceEntries: { include: { item: true } },
     },
   });
@@ -159,6 +173,12 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
 
   // "En yakın istasyon" ilçe sınırını aşabilir, o yüzden hepsi lazım
   const allExisting = await prisma.transitStation.findMany({ where: { stage: "EXISTING" } });
+
+  // Sıklık sıralaması: kullanıcı "bu ilçe sık mı seyrek mi" diye bakacak
+  const busRanking = neighborhoods
+    .filter((n) => n.busService)
+    .sort((a, b) => b.busService!.departuresPerStop - a.busService!.departuresPerStop)
+    .map((n) => n.slug);
 
   // Bir hattın kaç istasyonu var - panelde "bu ilçede 2, hattın toplam 19" demek için
   const lineTotals = new Map<string, number>();
@@ -316,6 +336,24 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       missing.push("hızlı ulaşım");
     }
 
+    // --- Otobüs ---
+    const bus: BusAccess | null = n.busService
+      ? {
+          stops: n.busService.stops,
+          lines: n.busService.lines,
+          weekdayDepartures: n.busService.weekdayDepartures,
+          departuresPerStop: n.busService.departuresPerStop,
+          rank: busRanking.indexOf(n.slug) + 1,
+          provenance: toProvenance({
+            source: n.busService.source,
+            sourceUrl: n.busService.sourceUrl,
+            method: n.busService.method,
+            observedAt: n.busService.observedAt,
+          }),
+        }
+      : null;
+    if (!bus) missing.push("otobüs");
+
     return {
       slug: n.slug,
       name: n.name,
@@ -326,6 +364,7 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       polygon: (n.polygon as number[][][] | null) ?? null,
       rent,
       transit,
+      bus,
       cost,
       missing,
     };

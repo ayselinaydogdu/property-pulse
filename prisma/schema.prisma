@@ -53,6 +53,7 @@ model Neighborhood {
   priceEntries PriceEntry[]
   benchmarks   RentBenchmark[]
   stations     TransitStation[]
+  busService   BusService?
 
   @@index([city, district])
 }
@@ -166,4 +167,29 @@ model TransitStation {
   neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
 
   @@index([neighborhoodId, stage])
+}
+
+/// İlçe bazlı otobüs hizmet yoğunluğu (hafta içi).
+///
+/// Durak sayısı ilçeleri ayırmaz - her ilçede otobüs durağı var. Ayırt eden
+/// şey sıklık: aynı sayıda durağı olan iki ilçeden birinde günde 400,
+/// diğerinde 3.000 sefer olabilir. Metrobüs buraya dahil değil, hızlı ulaşım
+/// katmanında sayılıyor.
+model BusService {
+  id                Int          @id @default(autoincrement())
+  neighborhoodId    Int          @unique
+  stops             Int
+  /// İlçedeki duraklara uğrayan farklı hat sayısı
+  lines             Int
+  /// İlçedeki tüm duraklarda hafta içi bir gündeki toplam kalkış
+  weekdayDepartures Int
+  /// Ortalama bir durağa hafta içi günde uğrayan otobüs sayısı - ilçe
+  /// büyüklüğünden bağımsız sıklık göstergesi
+  departuresPerStop Float
+  method            SourceMethod
+  source            String
+  sourceUrl         String
+  observedAt        DateTime
+
+  neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
 }
