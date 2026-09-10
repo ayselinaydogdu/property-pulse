@@ -37,6 +37,7 @@ npm test                      # birim testler
 | Raylı sistem istasyonları | **Bağlı** - 343 istasyon (268 mevcut, 75 inşaatta) | [İBB Açık Veri - Raylı Sistem İstasyon Noktaları](https://data.ibb.gov.tr/dataset/rayli-sistem-istasyon-noktalari-verisi), 05.06.2025 |
 | Metrobüs istasyonları | **Bağlı** - 46 istasyon | [İBB Açık Veri - IETT GTFS](https://data.ibb.gov.tr/dataset/iett-gtfs-verisi), 21.04.2026 |
 | Otobüs hizmet yoğunluğu | **Bağlı** - 39 ilçe | Aynı GTFS'ten hesaplandı (`scripts/build_bus_service.py`) |
+| Kira endeksi (İstanbul geneli) | **Bağlı** - 34 çeyrek, 2018-Q1 → 2026-Q2 | TCMB EVDS, `TP.BK.ISTANBUL` (`scripts/fetch_evds_rent_index.py`) |
 | Günlük harcamalar (kahve, market, hizmet) | **Yok** | İlçe kırılımında yayınlanmış veri yok. Kullanıcı katkısıyla toplanacak. |
 | İşe gidiş süresi (kapı-kapı) | **Yok** | İstasyon konumları bağlandı, süre hesabı için rota motoru gerekiyor |
 | Satılık m² fiyatı / kira getirisi | **Yok** | İlçe bazlı gerçek kaynak bulunamadı, özellik kaldırıldı |
@@ -52,6 +53,13 @@ npm test                      # birim testler
 - **Metrobüs verisi bir hatayı düzeltti.** Sadece raylı sistem varken Avcılar, Esenyurt, Büyükçekmece ve Beylikdüzü "hızlı ulaşım yok" görünüyordu - dördü de metrobüs koridorunda ve dördü de aracın "en ucuz" diye önerdiği batı ilçeleri. Hızlı ulaşımı olmayan ilçe sayısı 11'den 7'ye indi.
 - Metrobüs durakları [İETT GTFS](https://data.ibb.gov.tr/dataset/iett-gtfs-verisi)'inden `routes` → `trips` → `stop_times` → `stops` zinciriyle çıkarıldı (34 hat ailesi: 34, 34A, 34AS, 34B, 34BZ, 34C, 34G, 34T, 34U, 34Z). Kaynaktaki koordinatlar **bozuk geliyor** (`stop_lat = 410.191.700.005.564` - Türkçe sayı biçimlendirmesi ondalığı binlik ayracına çevirmiş); rakamlar birleştirilip ondalık geri konuldu ve İstanbul sınır kutusuyla doğrulandı. Gidiş-dönüş için ayrı kayıtlı 90 durak, ada göre 46 istasyona indirildi.
 - **Sınır sadeleştirmesinin bedeli:** 314 mevcut istasyonun 9'u hiçbir ilçeye düşmüyor. 6'sı doğru (5 Kocaeli'nde, Haliç metro köprüsünde), 2'si ~65 m'lik sadeleştirme toleransı yüzünden sınırın hemen dışına düşen sınır komşusu durak, 1'i belirsiz. Hiçbiri bir ilçenin sonucunu değiştirmiyor.
+
+### TCMB EVDS hakkında
+
+- Servis **EVDS 3'e taşındı**; eski `evds2.tcmb.gov.tr/service/evds/...` adresi artık 302 ile evds3 köküne yönlendiriyor. Güncel taban adres: `https://evds3.tcmb.gov.tr/igmevdsms-dis/`. API anahtarı **HTTP başlığında** gönderiliyor (`key: ...`), URL parametresi olarak değil (Nisan 2024 değişikliği).
+- Konut Fiyat Endeksi yerine **`TP.BK.ISTANBUL` (İstanbul Konut Birim Kiraları)** kullanıldı: fiyat değil doğrudan **kira** ölçüyor, üç aylık ve TL/m² cinsinden mutlak değer veriyor. Kira çapalarını güncellemek için fiyat endeksinden daha uygun.
+- Seri değerleme raporlarına dayanır, ilan veya kiracı beyanına değil - **seviyesi** başka kaynaklardan farklı olabilir (2026-Q2: 442,57 TL/m²). Bu yüzden seviye için değil, **zaman içindeki değişim** için kullanılıyor.
+- İlçe kırılımı yok, İstanbul geneli tek değer.
 
 ### Araştırma notları (neyin neden olmadığı)
 
@@ -111,14 +119,14 @@ curl "http://localhost:3000/api/affordability?income=75000&areaM2=80&household=2
 - [x] Leaflet choropleth haritası (gerçek ilçe sınırları), Recharts grafikler, açık/koyu tema
 - [x] Eksik verinin arayüzde dürüstçe gösterilmesi ("veri yok", `+` işareti, veri durumu paneli)
 - [x] Aykırı değer filtresi (IQR) - kullanıcı katkısı geldiğinde devreye girecek
-- [x] **Birim testler** (30 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
+- [x] **Birim testler** (34 test, `npm test`) - medyan/çeyreklik/IQR filtresi, kuş uçuşu mesafe, nokta-poligon testi ve bütçe hesabı. Node'un yerleşik test koşucusu, ek bağımlılık yok.
 - [x] **Hızlı ulaşım erişimi** - raylı sistem + metrobüs; haritada ayrı katman
 - [x] **Otobüs hizmet yoğunluğu** - hafta içi sefer sıklığı, hat ve durak sayısı; haritada ayrı katman
+- [x] **TCMB kira endeksi** - İstanbul geneli birim kira serisi; bağımsız çapraz kontrol olarak gösteriliyor ve çapalar bayatladığında oranlayarak güncelleyecek
 - [x] **İlçe detay paneli** - satıra/haritaya/çubuğa tıklayınca sağdan açılır; kira özeti ve hızlı ulaşım hat hat: hattın kodu, türü (metro/tramvay/banliyö/metrobüs), adı, o ilçedeki istasyonları ve hattın İstanbul genelindeki toplam istasyon sayısı
 
 ### Sıradaki
 - [ ] **Kapı-kapı yolculuk süresi** - kullanıcı iş konumunu girsin, her ilçeden süre hesaplansın. İstasyon konumları hazır; rota motoru (OpenTripPlanner vb.) gerekiyor. Projenin farklılaştığı yer: *"ucuz semt gerçekten ucuz mu, yoksa ayda kaç saatine mal oluyor?"*
-- [ ] TCMB EVDS bağlantısı - elle girilen kira çapalarını endeksle güncel tutmak (`method: DERIVED`)
 - [ ] İkinci kira kaynağı ekleyip çelişen kaynakları aralık olarak göstermek
 - [ ] Kullanıcı katkı formu - kiracılar kendi kiralarını girsin, `PropertyListing` dolsun
 - [ ] `db push` yerine versiyonlu `prisma migrate`
@@ -141,7 +149,9 @@ data/                     Kaynak veri dosyaları (seed'in tek doğru kaynağı)
   district-boundaries.json  Harita çokgenleri
   transit-stations.json   389 istasyon (raylı sistem + metrobüs), kaynak bazlı
   bus-service.json        39 ilçe için otobüs hizmet yoğunluğu
-scripts/build_bus_service.py  GTFS'ten ilçe bazlı otobüs sıklığı üretir
+  rent-index.json         TCMB İstanbul kira endeksi, 34 çeyrek
+scripts/build_bus_service.py     GTFS'ten ilçe bazlı otobüs sıklığı üretir
+scripts/fetch_evds_rent_index.py TCMB'den İstanbul kira endeksini çeker
 prisma/schema.prisma      Şema - provenance alanları zorunlu
 prisma/seed.ts            data/ -> veritabanı yükleyici
 src/lib/stats.ts          Medyan, çeyreklik, IQR outlier filtresi

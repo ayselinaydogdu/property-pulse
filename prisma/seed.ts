@@ -47,6 +47,17 @@ type StationFile = {
   }[];
 };
 
+type RentIndexFile = {
+  _meta: {
+    series: string;
+    source: string;
+    sourceUrl: string;
+    method: SourceMethod;
+    retrievedAt: string;
+  };
+  points: { period: string; periodStart: string; value: number }[];
+};
+
 type BusServiceFile = {
   _meta: { source: string; sourceUrl: string; method: SourceMethod; retrievedAt: string };
   districts: Record<
@@ -168,6 +179,29 @@ async function main() {
     `${stationRows.length} toplu ulaşım istasyonu yüklendi ` +
       `(${existing} mevcut, ${stationRows.length - existing} inşaat halinde` +
       `${unmatched > 0 ? `, ${unmatched} tanesi hiçbir ilçe sınırına düşmedi` : ""})`,
+  );
+
+  // --- TCMB kira endeksi (İstanbul geneli) ---
+  const indexFile = readJson<RentIndexFile>("data", "rent-index.json");
+  const indexRetrievedAt = new Date(indexFile._meta.retrievedAt);
+  for (const pt of indexFile.points) {
+    await prisma.rentIndexPoint.upsert({
+      where: { series_period: { series: indexFile._meta.series, period: pt.period } },
+      update: { value: pt.value, retrievedAt: indexRetrievedAt },
+      create: {
+        series: indexFile._meta.series,
+        period: pt.period,
+        periodStart: new Date(pt.periodStart),
+        value: pt.value,
+        method: indexFile._meta.method,
+        source: indexFile._meta.source,
+        sourceUrl: indexFile._meta.sourceUrl,
+        retrievedAt: indexRetrievedAt,
+      },
+    });
+  }
+  console.log(
+    `${indexFile.points.length} çeyreklik kira endeksi yüklendi (${indexFile._meta.series})`,
   );
 
   // --- Otobüs hizmet yoğunluğu ---

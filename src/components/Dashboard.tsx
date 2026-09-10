@@ -535,6 +535,25 @@ export default function Dashboard({
                 <p className="mt-2">
                   <SourceNote sources={selected.rent.sources} />
                 </p>
+
+                {selected.rent.index && (
+                  <p
+                    className="mt-3 rounded-lg p-2.5"
+                    style={{ background: "var(--page)", color: "var(--text-secondary)" }}
+                  >
+                    Karşılaştırma: TCMB&apos;ye göre <b>İstanbul geneli</b>{" "}
+                    {selected.rent.index.cityPerM2} ₺/m² ({selected.rent.index.period}).
+                    {selected.rent.perM2 > selected.rent.index.cityPerM2
+                      ? ` ${selected.name} şehir ortalamasının üstünde.`
+                      : ` ${selected.name} şehir ortalamasının altında.`}
+                    {selected.rent.index.appliedFactor !== null && (
+                      <span className="block" style={{ color: "var(--text-muted)" }}>
+                        Çapa {selected.rent.index.baselinePeriod} tarihliydi, bu seriyle
+                        ×{selected.rent.index.appliedFactor} oranında güncellendi.
+                      </span>
+                    )}
+                  </p>
+                )}
               </section>
             )}
 
@@ -716,6 +735,26 @@ export default function Dashboard({
                     otobüs durakları dahil değil: her ilçede var, ilçeleri ayırmıyor.
                     İnşaat halindeki istasyonlar sayılmıyor. Uzaklık ilçe merkezinden kuş
                     uçuşudur - yürüme mesafesi değildir.
+                  </p>
+                </div>
+              </li>
+            )}
+            {rows[0]?.rent?.index && (
+              <li className="flex items-start gap-2">
+                <span aria-hidden style={{ color: "var(--status-good)" }}>
+                  ●
+                </span>
+                <div>
+                  <div className="font-medium">
+                    TCMB kira endeksi · İstanbul geneli {rows[0].rent.index.cityPerM2} ₺/m² (
+                    {rows[0].rent.index.period})
+                  </div>
+                  <SourceNote sources={[rows[0].rent.index.provenance]} />
+                  <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                    Üç aylık, İstanbul geneli - ilçe kırılımı yok. İki işi var: bağımsız
+                    çapraz kontrol, ve ilçe çapaları bayatladığında oranlanarak
+                    güncellenmeleri. Güncelleme uygulanırsa değer{" "}
+                    <b>ölçüm değil çıkarım</b> olarak işaretlenir.
                   </p>
                 </div>
               </li>

@@ -22,6 +22,40 @@ export type Provenance = {
   note: string | null;
 };
 
+export type IndexPoint = { period: string; periodStart: Date; value: number };
+
+/**
+ * Bayat bir çapanın hangi katsayıyla güncelleneceğini hesaplar.
+ *
+ * Çapa tarihini kapsayan (ya da ondan önceki en yakın) çeyrek taban alınır;
+ * serinin son çeyreğine oranlanır. Çapa serinin son gözleminden yeniyse
+ * güncellemeye gerek yoktur ve `null` döner - uydurma bir tazelik üretilmez.
+ */
+export function computeIndexFactor(
+  anchorDate: Date,
+  points: IndexPoint[],
+): { factor: number; baseline: IndexPoint; latest: IndexPoint } | null {
+  const latest = points.at(-1);
+  if (!latest) return null;
+  const baseline = points.filter((p) => p.periodStart <= anchorDate).at(-1);
+  if (!baseline || latest.periodStart <= baseline.periodStart) return null;
+  return { factor: latest.value / baseline.value, baseline, latest };
+}
+
+export type RentIndexInfo = {
+  /** TCMB'ye göre İstanbul geneli birim kira, TL/m² */
+  cityPerM2: number;
+  /** "2026-Q2" */
+  period: string;
+  /**
+   * Çapa bayatladığı için uygulanan katsayı. null = çapa endeksin son
+   * gözleminden daha yeni, güncellemeye gerek yok.
+   */
+  appliedFactor: number | null;
+  baselinePeriod: string | null;
+  provenance: Provenance;
+};
+
 export type RentEstimate = {
   /** Tek kaynak varsa min = max. Kaynaklar çelişirse aralık gösterilir. */
   perM2Min: number;
@@ -35,6 +69,8 @@ export type RentEstimate = {
   /** Kendi veritabanımızdaki tek tek kayıt sayısı */
   observationCount: number;
   sources: Provenance[];
+  /** TCMB şehir geneli referansı ve varsa uygulanan endeksleme */
+  index: RentIndexInfo | null;
 };
 
 export type BasketLine = {
@@ -174,6 +210,13 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
   // "En yakın istasyon" ilçe sınırını aşabilir, o yüzden hepsi lazım
   const allExisting = await prisma.transitStation.findMany({ where: { stage: "EXISTING" } });
 
+  // TCMB kira endeksi: bayat çapaları güncellemek ve şehir geneli referans için
+  const indexPoints = await prisma.rentIndexPoint.findMany({
+    where: { series: "TP.BK.ISTANBUL" },
+    orderBy: { periodStart: "asc" },
+  });
+  const latestIndex = indexPoints.at(-1) ?? null;
+
   // Sıklık sıralaması: kullanıcı "bu ilçe sık mı seyrek mi" diye bakacak
   const busRanking = neighborhoods
     .filter((n) => n.busService)
@@ -216,6 +259,8 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
             note: `${used.length} kayıt (aykırı değerler elendi)`,
           },
         ],
+        // Kendi ölçümümüz zaten güncel; endeksleme uygulanmaz
+        index: null,
       };
     } else if (n.benchmarks.length > 0) {
       // Her kaynağın en güncel satırı - aynı kaynağın eski ölçümü tekrar sayılmasın
@@ -228,24 +273,58 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
       const perM2Min = Math.min(...values);
       const perM2Max = Math.max(...values);
 
+      // Çapa bayatladıysa TCMB serisiyle oranlanarak güncellenir.
+      // Bu bir ölçüm değil çıkarımdır; kaynaklara DERIVED satırı eklenir.
+      const indexing = computeIndexFactor(rows[0].retrievedAt, indexPoints);
+      const factor = indexing?.factor ?? null;
+      const baseline = indexing?.baseline ?? null;
+
+      const sources = rows.map((b) =>
+        toProvenance({
+          source: b.source,
+          sourceUrl: b.sourceUrl,
+          method: b.method,
+          observedAt: b.retrievedAt,
+          sampleSize: b.sampleSize,
+          note: b.note,
+        }),
+      );
+      if (factor !== null && latestIndex && baseline) {
+        sources.push({
+          source: `${latestIndex.source} - ${latestIndex.series}`,
+          sourceUrl: latestIndex.sourceUrl,
+          method: "DERIVED",
+          observedAt: latestIndex.retrievedAt.toISOString(),
+          sampleSize: null,
+          note: `Çapa ${baseline.period} tarihliydi; ${latestIndex.period} verisiyle ×${round(factor, 3)} oranında güncellendi.`,
+        });
+      }
+
+      const scale = (v: number) => round(v * (factor ?? 1), 1);
+
       rent = {
-        perM2Min,
-        perM2Max,
+        perM2Min: scale(perM2Min),
+        perM2Max: scale(perM2Max),
         // Kaynaklar çelişiyorsa medyan alınır; tek kaynakta zaten o değer
-        perM2: round(median(values), 1),
+        perM2: scale(median(values)),
         hasSpread: perM2Min !== perM2Max,
         basis: "BENCHMARK",
         observationCount: n.listings.length,
-        sources: rows.map((b) =>
-          toProvenance({
-            source: b.source,
-            sourceUrl: b.sourceUrl,
-            method: b.method,
-            observedAt: b.retrievedAt,
-            sampleSize: b.sampleSize,
-            note: b.note,
-          }),
-        ),
+        sources,
+        index: latestIndex
+          ? {
+              cityPerM2: latestIndex.value,
+              period: latestIndex.period,
+              appliedFactor: factor === null ? null : round(factor, 3),
+              baselinePeriod: factor === null ? null : (baseline?.period ?? null),
+              provenance: toProvenance({
+                source: latestIndex.source,
+                sourceUrl: latestIndex.sourceUrl,
+                method: latestIndex.method,
+                observedAt: latestIndex.retrievedAt,
+              }),
+            }
+          : null,
       };
     } else {
       missing.push("kira");

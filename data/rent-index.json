@@ -1,0 +1,192 @@
+{
+  "_meta": {
+    "description": "TCMB İstanbul konut birim kirası (TL/m², üç aylık). İlçe çapaları bayatladığında bu seriyle oranlanarak güncellenir; sonuç method=DERIVED olarak işaretlenir.",
+    "series": "TP.BK.ISTANBUL",
+    "seriesName": "İstanbul Konut Birim Kiraları",
+    "datagroup": "bie_bk",
+    "unit": "TL/m²",
+    "frequency": "üç aylık",
+    "source": "TCMB EVDS",
+    "sourceUrl": "https://evds3.tcmb.gov.tr",
+    "method": "OBSERVED",
+    "retrievedAt": "2026-09-10",
+    "producedBy": "scripts/fetch_evds_rent_index.py",
+    "caveats": [
+      "İstanbul GENELİ bir ortalamadır; ilçe kırılımı yoktur.",
+      "Değerleme raporlarına dayanır, ilan veya kiracı beyanına değil - seviyesi başka kaynaklardan farklı olabilir. Bu yüzden seviye için değil, ZAMAN İÇİNDEKİ DEĞİŞİM için kullanılır.",
+      "Son çeyrek gecikmeli yayımlanır; henüz yayımlanmamış çeyrekler atlanır."
+    ]
+  },
+  "points": [
+    {
+      "period": "2018-Q1",
+      "periodStart": "2018-01-01",
+      "value": 19.51
+    },
+    {
+      "period": "2018-Q2",
+      "periodStart": "2018-04-01",
+      "value": 19.65
+    },
+    {
+      "period": "2018-Q3",
+      "periodStart": "2018-07-01",
+      "value": 19.89
+    },
+    {
+      "period": "2018-Q4",
+      "periodStart": "2018-10-01",
+      "value": 20.34
+    },
+    {
+      "period": "2019-Q1",
+      "periodStart": "2019-01-01",
+      "value": 19.3
+    },
+    {
+      "period": "2019-Q2",
+      "periodStart": "2019-04-01",
+      "value": 19.49
+    },
+    {
+      "period": "2019-Q3",
+      "periodStart": "2019-07-01",
+      "value": 20.06
+    },
+    {
+      "period": "2019-Q4",
+      "periodStart": "2019-10-01",
+      "value": 21.25
+    },
+    {
+      "period": "2020-Q1",
+      "periodStart": "2020-01-01",
+      "value": 21.66
+    },
+    {
+      "period": "2020-Q2",
+      "periodStart": "2020-04-01",
+      "value": 22.92
+    },
+    {
+      "period": "2020-Q3",
+      "periodStart": "2020-07-01",
+      "value": 24.04
+    },
+    {
+      "period": "2020-Q4",
+      "periodStart": "2020-10-01",
+      "value": 26.36
+    },
+    {
+      "period": "2021-Q1",
+      "periodStart": "2021-01-01",
+      "value": 26.92
+    },
+    {
+      "period": "2021-Q2",
+      "periodStart": "2021-04-01",
+      "value": 29.07
+    },
+    {
+      "period": "2021-Q3",
+      "periodStart": "2021-07-01",
+      "value": 31.39
+    },
+    {
+      "period": "2021-Q4",
+      "periodStart": "2021-10-01",
+      "value": 39.06
+    },
+    {
+      "period": "2022-Q1",
+      "periodStart": "2022-01-01",
+      "value": 53.49
+    },
+    {
+      "period": "2022-Q2",
+      "periodStart": "2022-04-01",
+      "value": 69.92
+    },
+    {
+      "period": "2022-Q3",
+      "periodStart": "2022-07-01",
+      "value": 89.08
+    },
+    {
+      "period": "2022-Q4",
+      "periodStart": "2022-10-01",
+      "value": 101.57
+    },
+    {
+      "period": "2023-Q1",
+      "periodStart": "2023-01-01",
+      "value": 120.57
+    },
+    {
+      "period": "2023-Q2",
+      "periodStart": "2023-04-01",
+      "value": 140.83
+    },
+    {
+      "period": "2023-Q3",
+      "periodStart": "2023-07-01",
+      "value": 167.37
+    },
+    {
+      "period": "2023-Q4",
+      "periodStart": "2023-10-01",
+      "value": 187.66
+    },
+    {
+      "period": "2024-Q1",
+      "periodStart": "2024-01-01",
+      "value": 193.09
+    },
+    {
+      "period": "2024-Q2",
+      "periodStart": "2024-04-01",
+      "value": 205.88
+    },
+    {
+      "period": "2024-Q3",
+      "periodStart": "2024-07-01",
+      "value": 232.73
+    },
+    {
+      "period": "2024-Q4",
+      "periodStart": "2024-10-01",
+      "value": 260.58
+    },
+    {
+      "period": "2025-Q1",
+      "periodStart": "2025-01-01",
+      "value": 293.16
+    },
+    {
+      "period": "2025-Q2",
+      "periodStart": "2025-04-01",
+      "value": 305.19
+    },
+    {
+      "period": "2025-Q3",
+      "periodStart": "2025-07-01",
+      "value": 334.58
+    },
+    {
+      "period": "2025-Q4",
+      "periodStart": "2025-10-01",
+      "value": 367.86
+    },
+    {
+      "period": "2026-Q1",
+      "periodStart": "2026-01-01",
+      "value": 404.53
+    },
+    {
+      "period": "2026-Q2",
+      "periodStart": "2026-04-01",
+      "value": 442.57
+    }
+  ]
+}

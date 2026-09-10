@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { applyAffordability, type NeighborhoodStats } from "./aggregate";
+import {
+  applyAffordability,
+  computeIndexFactor,
+  type NeighborhoodStats,
+} from "./aggregate";
 
 /** Testin ilgilendiği alanları verip gerisini makul varsayılanlarla dolduran yardımcı. */
 function stats(over: Partial<NeighborhoodStats> = {}): NeighborhoodStats {
@@ -20,6 +24,7 @@ function stats(over: Partial<NeighborhoodStats> = {}): NeighborhoodStats {
       basis: "BENCHMARK",
       observationCount: 0,
       sources: [],
+      index: null,
     },
     cost: null,
     transit: null,
@@ -119,5 +124,33 @@ describe("applyAffordability", () => {
     const [row] = applyAffordability([stats()], { income: 0, areaM2: 90 });
     assert.equal(row.knownBurdenPct, null);
     assert.equal(row.affordable, null);
+  });
+});
+
+describe("computeIndexFactor", () => {
+  const points = [
+    { period: "2026-Q1", periodStart: new Date("2026-01-01"), value: 400 },
+    { period: "2026-Q2", periodStart: new Date("2026-04-01"), value: 440 },
+  ];
+
+  it("çapa serinin son gözleminden yeniyse güncelleme yapmaz", () => {
+    // 9 Eylül 2026: taban Q2, son da Q2 -> tazelenecek bir şey yok
+    assert.equal(computeIndexFactor(new Date("2026-09-09"), points), null);
+  });
+
+  it("çapa bayatsa taban çeyreğe göre oranlar", () => {
+    const result = computeIndexFactor(new Date("2026-02-15"), points);
+    assert.ok(result);
+    assert.equal(result.baseline.period, "2026-Q1");
+    assert.equal(result.latest.period, "2026-Q2");
+    assert.equal(result.factor, 1.1);
+  });
+
+  it("çapa serinin başlangıcından eskiyse taban bulunamaz, güncelleme yapılmaz", () => {
+    assert.equal(computeIndexFactor(new Date("2020-01-01"), points), null);
+  });
+
+  it("seri boşsa null döner", () => {
+    assert.equal(computeIndexFactor(new Date("2026-05-01"), []), null);
   });
 });

@@ -194,3 +194,29 @@ model BusService {
 
   neighborhood Neighborhood @relation(fields: [neighborhoodId], references: [id], onDelete: Cascade)
 }
+
+/// TCMB'nin İstanbul geneli konut birim kirası serisi (üç aylık, TL/m²).
+///
+/// İki işi var:
+/// 1. Elle girilen ilçe çapaları bayatladığında oranlanarak güncellenmelerini
+///    sağlar (sonuç method=DERIVED olarak işaretlenir).
+/// 2. Bağımsız bir çapraz kontrol: "TCMB'ye göre İstanbul geneli şu kadar".
+///
+/// İlçe kırılımı YOKTUR; seviye için değil, zaman içindeki değişim için kullanılır.
+model RentIndexPoint {
+  id          Int          @id @default(autoincrement())
+  series      String
+  /// "2026-Q2"
+  period      String
+  /// Çeyreğin ilk günü - sıralama ve karşılaştırma için
+  periodStart DateTime
+  /// TL/m²
+  value       Float
+  method      SourceMethod
+  source      String
+  sourceUrl   String
+  retrievedAt DateTime
+
+  @@unique([series, period])
+  @@index([series, periodStart])
+}
