@@ -75,6 +75,8 @@ export type DistrictStation = {
   /** Kaynaktaki tam hat adı */
   lineName: string;
   mode: string;
+  /** Hattın İstanbul genelindeki toplam mevcut istasyon sayısı */
+  lineTotal: number;
   /** İlçe merkezinden kuş uçuşu km */
   km: number;
 };
@@ -157,6 +159,13 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
 
   // "En yakın istasyon" ilçe sınırını aşabilir, o yüzden hepsi lazım
   const allExisting = await prisma.transitStation.findMany({ where: { stage: "EXISTING" } });
+
+  // Bir hattın kaç istasyonu var - panelde "bu ilçede 2, hattın toplam 19" demek için
+  const lineTotals = new Map<string, number>();
+  for (const st of allExisting) {
+    const code = lineCode(st.line, st.mode);
+    lineTotals.set(code, (lineTotals.get(code) ?? 0) + 1);
+  }
 
   return neighborhoods.map((n) => {
     const missing: string[] = [];
@@ -283,13 +292,17 @@ export async function getNeighborhoodStats(): Promise<NeighborhoodStats[]> {
         modes: [...new Set(own.map((st) => st.mode))].sort(),
         lines: [...new Set(own.map((st) => lineCode(st.line, st.mode)))].sort(),
         stations: own
-          .map((st) => ({
-            name: st.name,
-            line: lineCode(st.line, st.mode),
-            lineName: st.line,
-            mode: st.mode,
-            km: round(haversineKm({ lat: n.lat, lng: n.lng }, st), 1),
-          }))
+          .map((st) => {
+            const code = lineCode(st.line, st.mode);
+            return {
+              name: st.name,
+              line: code,
+              lineName: st.line,
+              mode: st.mode,
+              lineTotal: lineTotals.get(code) ?? 0,
+              km: round(haversineKm({ lat: n.lat, lng: n.lng }, st), 1),
+            };
+          })
           .sort((a, b) => a.km - b.km),
         provenance: toProvenance({
           source: first.source,

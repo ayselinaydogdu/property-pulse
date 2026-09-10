@@ -26,6 +26,16 @@ export type DashboardInput = {
   maxBurdenPct: number;
 };
 
+/** Kaynaktaki tür adlarının okunur karşılığı. */
+const MODE_LABELS: Record<string, string> = {
+  Metro: "Metro",
+  Tramvay: "Tramvay",
+  Banliyö: "Banliyö treni",
+  Füniküler: "Füniküler",
+  Teleferik: "Teleferik",
+  Metrobüs: "Metrobüs",
+};
+
 const METHOD_LABELS: Record<Provenance["method"], string> = {
   OBSERVED: "gözlem",
   PUBLISHED_AGGREGATE: "yayınlanmış ortalama",
@@ -538,26 +548,41 @@ export default function Dashboard({
                 </h3>
 
                 {selected.transit.stations.length > 0 ? (
-                  <ul className="mt-3 space-y-3">
-                    {groupByLine(selected.transit.stations).map(([line, stations]) => (
-                      <li key={line}>
-                        <div className="flex flex-wrap items-baseline gap-x-2">
-                          <span
-                            className="rounded px-1.5 py-0.5 font-semibold"
-                            style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
-                          >
-                            {line}
-                          </span>
-                          <span style={{ color: "var(--text-muted)" }}>
-                            {stripLineCode(stations[0].lineName, line)}
-                          </span>
-                        </div>
-                        <p className="mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {stations.map((st) => st.name).join(" · ")}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <p className="mt-1" style={{ color: "var(--text-muted)" }}>
+                      Aşağıdakiler bu hatların <b>{selected.name} sınırları içindeki</b>{" "}
+                      istasyonları. Hatlar başka ilçelerden de geçiyor.
+                    </p>
+                    <ul className="mt-3 space-y-3">
+                      {groupByLine(selected.transit.stations).map(([line, stations]) => (
+                        <li key={line}>
+                          <div className="flex flex-wrap items-baseline gap-x-2">
+                            <span
+                              className="rounded px-1.5 py-0.5 font-semibold"
+                              style={{ background: "var(--series-rent)", color: "#fcfcfb" }}
+                            >
+                              {line}
+                            </span>
+                            {(MODE_LABELS[stations[0].mode] ?? stations[0].mode) !== line && (
+                              <span className="font-medium">
+                                {MODE_LABELS[stations[0].mode] ?? stations[0].mode}
+                              </span>
+                            )}
+                            <span style={{ color: "var(--text-muted)" }}>
+                              {stripLineCode(stations[0].lineName, line)}
+                            </span>
+                          </div>
+                          <p className="mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                            {stations.map((st) => st.name).join(" · ")}
+                          </p>
+                          <p style={{ color: "var(--text-muted)" }}>
+                            Bu ilçede {stations.length} istasyon · hattın İstanbul genelinde{" "}
+                            {stations[0].lineTotal} istasyonu var
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 ) : (
                   <p className="mt-2" style={{ color: "var(--text-secondary)" }}>
                     Bu ilçede hızlı ulaşım istasyonu yok.
